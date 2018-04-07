@@ -1,0 +1,6 @@
+.idea
+.DS_Store
+logs
+project
+target
+app/.DS_Store
