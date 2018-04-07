@@ -1,6 +1,4 @@
-import org.openqa.selenium.firefox.FirefoxDriver
-import org.openqa.selenium.{By, WebDriver}
-import org.scalatest.selenium.WebBrowser
+import org.openqa.selenium.By
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice.GuiceOneServerPerTest
 
@@ -18,10 +16,17 @@ class Cigarra3310Spec extends PlaySpec
       "show Master dashboard" in {
 
         go to ("http://localhost:" + port + "/editor")
+        val title = By.id("title")
+        val enigmaDescription = By.id("description")
+        val enigmaSolution = By.id("solution")
+        val filePickerLabel = By.id("fileLabel")
+        val filePickerButton = By.id("fileInput")
 
-        textField("description").isDisplayed
-        textField("solution").isDisplayed
-        webDriver.findElement(By.id("continue"))
+        webDriver.findElement(title)
+        webDriver.findElement(enigmaDescription)
+        webDriver.findElement(enigmaSolution)
+        webDriver.findElement(filePickerLabel)
+        webDriver.findElement(filePickerButton)
       }
     }
 

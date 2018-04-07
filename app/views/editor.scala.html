@@ -1,11 +1,40 @@
 <html lang="en">
     <head>
-        @* Here's where we render the page title `String`. *@
-    <title>Cigarra3310</title>
+            <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+        <title>Cigarra3310</title>
     </head>
     <body>
-        <input type="text" placeholder="The enigma description" id="description"><br>
-        <input type="text" placeholder="The enigma solution" id="solution"><br>
-        <input type="submit" value="Continue" id="continue">
+        <div class="container">
+            <h3 id="title" class="mx-auto">Title of the Enigma</h3>
+        </div>
+
+        <div class="h-50 row align-items-center">
+            <div class="container">
+                <form>
+                    <div class="form-group">
+                        <textarea class="form-control" id="description" rows="5" placeholder="Description" maxlength="4000"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label id="fileLabel">Upload a file</label>
+                        <input type="file" class="form-control-file" id="fileInput">
+                    </div>
+
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="solution" placeholder="Solution" maxlength="4000">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="continue">Continue</button>
+                </form>
+            </div>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     </body>
 </html>
