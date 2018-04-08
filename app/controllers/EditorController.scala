@@ -7,7 +7,7 @@ import play.api.mvc._
 @Singleton
 class EditorController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
 
-  def index = Action {
+  def index(cigarraId: String) = Action {
     Ok(views.html.editor())
   }
 }

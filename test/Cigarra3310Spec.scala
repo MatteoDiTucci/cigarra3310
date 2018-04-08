@@ -1,43 +1,32 @@
 import org.openqa.selenium.By
-import org.scalatestplus.play._
+import org.scalatest.{FeatureSpec, GivenWhenThen}
 import org.scalatestplus.play.guice.GuiceOneServerPerTest
+import org.scalatestplus.play.{HtmlUnitFactory, OneBrowserPerTest, ServerProvider}
 
-/**
- * Runs a browser test using Fluentium against a play application on a server port.
- */
-class Cigarra3310Spec extends PlaySpec
-  with OneBrowserPerTest
-  with GuiceOneServerPerTest
-  with HtmlUnitFactory
-  with ServerProvider{
+class Cigarra3310Spec
+    extends FeatureSpec
+    with GivenWhenThen
+    with OneBrowserPerTest
+    with GuiceOneServerPerTest
+    with HtmlUnitFactory
+    with ServerProvider {
 
-  "Cigarra3310" when {
-    "navigating to Master editor page" should {
-      "show Master dashboard" in {
+  feature("Cigarra3310") {
+    scenario("As a master I want to create a new Cigarra") {
+      Given("I navigate to the home page")
+      val homePage = "http://localhost:" + port + "/"
+      go to homePage
 
-        go to ("http://localhost:" + port + "/editor")
-        val title = By.id("title")
-        val enigmaDescription = By.id("description")
-        val enigmaSolution = By.id("solution")
-        val filePickerLabel = By.id("fileLabel")
-        val filePickerButton = By.id("fileInput")
+      And("I insert the new Cigarra name")
+      val nameEditText = webDriver.findElement(By.id("name"))
+      nameEditText.sendKeys("some-name")
 
-        webDriver.findElement(title)
-        webDriver.findElement(enigmaDescription)
-        webDriver.findElement(enigmaSolution)
-        webDriver.findElement(filePickerLabel)
-        webDriver.findElement(filePickerButton)
-      }
-    }
+      And("I click on the new Cigarra button")
+      val newCigarraButton = webDriver.findElement(By.id("create"))
+      clickOn(newCigarraButton)
 
-    "navigating to the Home Page" should {
-      "show Cigarra3310 logo" in {
-
-        go to ("http://localhost:" + port + "/")
-
-        pageSource contains "Cigarra3310"
-      }
-
+      Then("I am redirected to the Editor page")
+      currentUrl matches """.*/cigarra/.*/editor"""
     }
   }
 }

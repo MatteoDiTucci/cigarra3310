@@ -3,13 +3,16 @@
 # ~~~~
 
 # An example controller showing how to write asynchronous code
-GET     /message                    controllers.AsyncController.message
+GET     /message                            controllers.AsyncController.message
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.versioned(file)
+GET     /assets/*file                       controllers.Assets.versioned(file)
 
 # An example controller showing how to write asynchronous code
-GET     /                           controllers.HomeController.index
+GET     /                                   controllers.HomeController.index
 
 # Master editor page
-GET     /editor                     controllers.EditorController.index
+GET     /cigarra/:cigarraId/editor          controllers.EditorController.index(cigarraId)
+
+# Create new Cigarra
+POST     /cigarra                           controllers.CigarraCreationController.create

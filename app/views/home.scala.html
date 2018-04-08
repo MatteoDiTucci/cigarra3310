@@ -1,9 +1,19 @@
 <html lang="en">
     <head>
-        @* Here's where we render the page title `String`. *@
-    <title>Cigarra3310</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <title>Cigarra3310</title>
     </head>
     <body>
-        <p>Cigarra3310</p>
+        <div class="h-100 row align-items-center">
+            <div class="container text-center">
+                <form action="/cigarra" method="post">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="name" placeholder="Cigarra name" maxlength="100" autocomplete="off" required>
+                    </div>
+                    <button type="submit" class="btn btn btn-primary btn-lg" id="create">Create your Cigarra</button>
+                </form>
+            </div>
+        </div>
+
     </body>
 </html>
