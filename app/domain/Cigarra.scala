@@ -1,3 +1,3 @@
 package domain
 
-case class Cigarra(guid: String, name: Option[String] = None)
+case class Cigarra(guid: Option[String] = None, name: String)

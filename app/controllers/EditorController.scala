@@ -1,13 +1,16 @@
 package controllers
 
 import javax.inject._
-
 import play.api.mvc._
+import services.CigarraService
 
 @Singleton
-class EditorController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
+class EditorController @Inject()(cigarraService: CigarraService)(cc: ControllerComponents)
+    extends AbstractController(cc) {
 
-  def index(cigarraId: String) = Action {
-    Ok(views.html.editor())
+  def index(cigarraGuid: String) = Action {
+    cigarraService.findCigarra(cigarraGuid) match {
+      case Some(cigarra) => Ok(views.html.editor(cigarra.name))
+    }
   }
 }

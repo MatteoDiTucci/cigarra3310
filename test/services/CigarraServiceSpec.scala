@@ -10,7 +10,7 @@ import org.mockito.ArgumentMatchers.any
 class CigarraServiceSpec extends WordSpec with MustMatchers with MockitoSugar {
   "CigarraService" when {
 
-    "provided with a name to create a new Cigarra" should {
+    "creating a new Cigarra" should {
 
       "return the new Cigarra guid" in {
         val expectedGuid = "some-guid"
@@ -22,6 +22,20 @@ class CigarraServiceSpec extends WordSpec with MustMatchers with MockitoSugar {
         val guid = service.createCigarra(cigarraName).getOrElse("cigarra not created")
 
         guid mustEqual expectedGuid
+      }
+    }
+
+    "retrieving an existing Cigarra by its guid" should {
+
+      "return the related Cigarra" in {
+        val guid = java.util.UUID.randomUUID.toString
+        val cigarraRepository = mock[CigarraRepository]
+        when(cigarraRepository.findCigarra(any[String])).thenReturn(Some(Cigarra(Some(guid), "some-name")))
+        val service = new CigarraService(cigarraRepository)
+
+        val cigarra = service.findCigarra(guid)
+
+        cigarra mustBe defined
       }
     }
   }

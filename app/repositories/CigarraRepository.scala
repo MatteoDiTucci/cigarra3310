@@ -9,7 +9,9 @@ import scala.collection.mutable
 
 @Singleton
 class CigarraRepository @Inject()() {
-  private val cigarras: mutable.Map[UUID, Cigarra] = mutable.Map()
+  def findCigarra(guid: String): Option[Cigarra] = cigarras.get(UUID.fromString(guid))
+
+  val cigarras: mutable.Map[UUID, Cigarra] = mutable.Map()
 
   def save(cigarra: Cigarra): Option[String] = {
     val guid: UUID = java.util.UUID.randomUUID

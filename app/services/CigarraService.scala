@@ -6,5 +6,7 @@ import repositories.CigarraRepository
 
 @Singleton
 class CigarraService @Inject()(cigarraRepository: CigarraRepository) {
-  def createCigarra(name: String): Option[String] = cigarraRepository.save(Cigarra(name))
+  def findCigarra(guid: String): Option[Cigarra] = cigarraRepository.findCigarra(guid)
+
+  def createCigarra(name: String): Option[String] = cigarraRepository.save(Cigarra(name = name))
 }
