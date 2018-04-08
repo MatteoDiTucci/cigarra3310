@@ -1,5 +1,5 @@
 package services
 
 class CigarraService {
-  def createCigarra(): String = "some-guid"
+  def createCigarra(name: String): Option[String] = Some("some-guid")
 }
