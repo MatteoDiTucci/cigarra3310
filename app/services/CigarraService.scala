@@ -1,5 +1,10 @@
 package services
 
-class CigarraService {
-  def createCigarra(name: String): Option[String] = Some("some-guid")
+import domain.Cigarra
+import javax.inject.{Inject, Singleton}
+import repositories.CigarraRepository
+
+@Singleton
+class CigarraService @Inject()(cigarraRepository: CigarraRepository) {
+  def createCigarra(name: String): Option[String] = cigarraRepository.save(Cigarra(name))
 }
