@@ -17,17 +17,32 @@ class CigarraRepositorySpec extends WordSpec with MustMatchers {
       }
     }
 
-    "retrieving an existing Cigarra by its guid" should {
+    "retrieving an existing Cigarra by its guid" when {
 
-      "return the related Cigarra" in {
-        val guid = java.util.UUID.randomUUID
-        val cigarraRepository = new CigarraRepository()
-        cigarraRepository.cigarras.put(guid, Cigarra(Some(guid.toString), "some-name"))
+      "the Cigarra can be found" should {
 
-        val cigarra = cigarraRepository.findCigarra(guid.toString)
+        "return the related Cigarra" in {
+          val guid = java.util.UUID.randomUUID
+          val cigarraRepository = new CigarraRepository()
+          cigarraRepository.cigarras.put(guid, Cigarra(Some(guid.toString), "some-name"))
 
-        cigarra mustBe defined
-        cigarra.get.guid.get mustEqual guid.toString
+          val cigarra = cigarraRepository.findCigarra(guid.toString)
+
+          cigarra mustBe defined
+          cigarra.get.guid.get mustEqual guid.toString
+        }
+      }
+
+      "the Cigarra cannot be found" should {
+
+        "return None" in {
+          val guid = java.util.UUID.randomUUID
+          val cigarraRepository = new CigarraRepository()
+
+          val cigarra = cigarraRepository.findCigarra(guid.toString)
+
+          cigarra mustBe None
+        }
       }
     }
   }

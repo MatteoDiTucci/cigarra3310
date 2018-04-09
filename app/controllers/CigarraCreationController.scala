@@ -13,13 +13,23 @@ class CigarraCreationController @Inject()(cigarraService: CigarraService)(cc: Co
   private val CIGARRA_NAME_FROM_KEY = "name"
 
   def create(): Action[AnyContent] = Action { request: Request[AnyContent] =>
-    (for {
-      requestParams <- request.body.asFormUrlEncoded
-      cigarraName <- getNameFromBody(requestParams)
-      cigarraGuid <- cigarraService.createCigarra(cigarraName)
-    } yield cigarraGuid).fold(BadRequest("An error as occurred"))(guid => SeeOther(s"/cigarra/$guid/editor"))
+    getCigarraName(request).fold(BadRequest("An error as occurred"))(createCigarraWithName)
 
   }
+
+  private def createCigarraWithName(name: String) =
+    cigarraService
+      .createCigarra(name)
+      .fold(InternalServerError("An error has occurred"))(redirectToEditorWithGuid)
+
+  private def redirectToEditorWithGuid(guid: String) =
+    SeeOther(s"/cigarra/$guid/editor")
+
+  private def getCigarraName(request: Request[AnyContent]) =
+    for {
+      requestParams <- request.body.asFormUrlEncoded
+      cigarraName <- getNameFromBody(requestParams)
+    } yield cigarraName
 
   private def getNameFromBody(parametersMap: Map[String, Seq[String]]) =
     Try(parametersMap(CIGARRA_NAME_FROM_KEY)) match {

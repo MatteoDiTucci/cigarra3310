@@ -3,14 +3,13 @@ package controllers
 import domain.Cigarra
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.play.PlaySpec
 import play.api.mvc.Results
-import play.api.test.Helpers.contentAsString
+import play.api.test.Helpers._
 import play.api.test._
 import services.CigarraService
-
-import scala.concurrent.duration._
 
 class EditorControllerSpec extends WordSpec with MustMatchers with MockitoSugar with Results {
   "EditorController" when {
@@ -26,7 +25,7 @@ class EditorControllerSpec extends WordSpec with MustMatchers with MockitoSugar 
 
         val result = controller.index(cigarraGuid)(FakeRequest())
 
-        contentAsString(result)(1.second) contains cigarraName
+        contentAsString(result) contains cigarraName
       }
     }
   }

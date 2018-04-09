@@ -12,21 +12,53 @@ import org.mockito.ArgumentMatchers.any
 class CigarraCreationControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
   "CigarraCreationController" when {
 
-    "" should {
-      val request = FakeRequest("POST", "/")
-        .withFormUrlEncodedBody("name" -> "some-name")
+    "receiving a valid POST request for creating a new Cigarra" when {
 
-      "redirect to the Master editor page" in {
-        val cigarraService = mock[CigarraService]
-        when(cigarraService.createCigarra(any[String])).thenReturn(Some("some-id"))
+      "the CigarraService is able to create a new Cigarra" should {
 
-        val controller = new CigarraCreationController(cigarraService)(Helpers.stubControllerComponents())
+        "redirect to the Master editor page" in {
+          val request = FakeRequest("POST", "/").withFormUrlEncodedBody("name" -> "some-name")
+          val cigarraService = mock[CigarraService]
+          when(cigarraService.createCigarra(any[String])).thenReturn(Some("some-id"))
 
-        val result = controller.create()(request)
+          val controller = createController(cigarraService)
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).get must endWith("/cigarra/some-id/editor")
+          val result = controller.create()(request)
+
+          status(result) mustEqual SEE_OTHER
+          redirectLocation(result).get must endWith("/cigarra/some-id/editor")
+        }
+      }
+
+      "the CigarraService is not able to create a new Cigarra" should {
+
+        "return an Internal Server error" in {
+          val request = FakeRequest("POST", "/").withFormUrlEncodedBody("name" -> "some-name")
+          val cigarraService = mock[CigarraService]
+          when(cigarraService.createCigarra(any[String])).thenReturn(None)
+
+          val controller = createController(cigarraService)
+
+          val result = controller.create()(request)
+
+          status(result) mustEqual INTERNAL_SERVER_ERROR
+        }
+      }
+
+      "receiving an invalid POST request for creating a new Cigarra" should {
+        val request = FakeRequest("POST", "/").withFormUrlEncodedBody()
+
+        "return a BadRequest" in {
+          val controller = createController()
+
+          val result = controller.create()(request)
+
+          status(result) mustEqual BAD_REQUEST
+        }
       }
     }
   }
+
+  private def createController(cigarraService: CigarraService = mock[CigarraService]) =
+    new CigarraCreationController(cigarraService)(Helpers.stubControllerComponents())
 }
