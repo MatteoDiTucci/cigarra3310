@@ -1,7 +1,5 @@
 package controllers
 
-import java.util.UUID
-
 import javax.inject._
 import play.api.mvc._
 import services.{CigarraService, LevelService}

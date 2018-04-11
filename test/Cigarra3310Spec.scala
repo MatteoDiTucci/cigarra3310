@@ -32,7 +32,7 @@ class Cigarra3310Spec
       currentUrl matches """.*/cigarra/.*/editor"""
       pageTitle.getText mustEqual cigarraName
 
-      And("I fill a new Level description and solution")
+      And("I fill create a new Level")
       val description = webDriver.findElement(By.id("description"))
       val solution = webDriver.findElement(By.id("solution"))
       description.sendKeys("some-description")
@@ -41,6 +41,18 @@ class Cigarra3310Spec
       Then("the page is reloaded")
       description.getText mustEqual ""
       solution.getText mustEqual ""
+
+      And("I create another new Level")
+      description.sendKeys("some-description")
+      solution.sendKeys("some-solution")
+
+      And("I finish the Cicada creation")
+      val finishButton = webDriver.findElement(By.id("finish"))
+      clickOn(finishButton)
+
+      Then("I see my Cicada public url")
+      val cicadaUrl = webDriver.findElement(By.id("url"))
+      cicadaUrl.getText must not equal ""
     }
   }
 }
