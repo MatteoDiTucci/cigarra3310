@@ -23,7 +23,7 @@ class CigarraCreationController @Inject()(cigarraService: CigarraService)(cc: Co
       .fold(InternalServerError("An error has occurred"))(redirectToEditorWithGuid)
 
   private def redirectToEditorWithGuid(guid: String) =
-    SeeOther(s"/cigarra/$guid/editor")
+    SeeOther(s"/cigarra/$guid/level")
 
   private def getCigarraName(request: Request[AnyContent]) =
     for {

@@ -26,7 +26,7 @@ class CigarraCreationControllerSpec extends WordSpec with MustMatchers with Mock
           val result = controller.create()(request)
 
           status(result) mustEqual SEE_OTHER
-          redirectLocation(result).get must endWith("/cigarra/some-id/editor")
+          redirectLocation(result).get must endWith("/cigarra/some-id/level")
           verify(cigarraService, times(1)).createCigarra(any[String])
         }
       }
