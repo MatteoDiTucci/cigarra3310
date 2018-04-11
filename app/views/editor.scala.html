@@ -11,21 +11,18 @@
         <title>Cigarra3310</title>
     </head>
     <body>
-        <div class="container">
-            <h3 id="name" class="mx-auto">@cigarraName</h3>
-        </div>
-
-        <div class="h-50 row align-items-center">
+        <div class="h-75 row align-items-center">
             <div class="container">
                 <form action="/cigarra/@cigarraGuid/level" method="post">
+                    <label>@cigarraName</label>
                     <div class="form-group">
-                        <textarea class="form-control" id="description" rows="5" name="description" placeholder="Engima description" maxlength="4000" autocomplete="off" required></textarea>
+                        <textarea class="form-control" id="description" rows="5" name="description" placeholder="Enigma description" maxlength="4000" autocomplete="off" required></textarea>
                     </div>
 
                     <div class="form-group">
                         <input type="text" class="form-control" id="solution" name="solution" placeholder="Enigma solution" maxlength="4000" autocomplete="off" required>
                     </div>
-                    <button type="submit" class="btn btn-primary" id="continue">Add another level</button>
+                    <button type="submit" class="btn btn-primary" id="continue">Add another Enigma</button>
                     <a href="/cigarra/@cigarraGuid/publication" class="btn btn-dark" role="button" id="finish">Finish</a>
                 </form>
             </div>
