@@ -9,7 +9,8 @@ import services.{CigarraService, LevelService}
 import scala.util.{Failure, Success, Try}
 
 @Singleton
-class EditorController @Inject()(cigarraService: CigarraService, levelService: LevelService)(cc: ControllerComponents)
+class CigarraEditorController @Inject()(cigarraService: CigarraService, levelService: LevelService)(
+    cc: ControllerComponents)
     extends AbstractController(cc) {
 
   private val LEVEL_DESCRIPTION_FROM_KEY = "description"

@@ -11,8 +11,8 @@ import play.api.test._
 import services.{CigarraService, LevelService}
 import org.scalatest.concurrent.Eventually.eventually
 
-class EditorControllerSpec extends WordSpec with MustMatchers with MockitoSugar with Results {
-  "EditorController" when {
+class CigarraEditorControllerSpec extends WordSpec with MustMatchers with MockitoSugar with Results {
+  "CigarraEditorController" when {
 
     "a GET request for the Master editor page is made" when {
 
@@ -146,7 +146,7 @@ class EditorControllerSpec extends WordSpec with MustMatchers with MockitoSugar 
   }
 
   private def createController(cigarraService: CigarraService = mock[CigarraService],
-                               levelService: LevelService = mock[LevelService]): EditorController =
-    new EditorController(cigarraService, levelService)(Helpers.stubControllerComponents())
+                               levelService: LevelService = mock[LevelService]): CigarraEditorController =
+    new CigarraEditorController(cigarraService, levelService)(Helpers.stubControllerComponents())
 
 }

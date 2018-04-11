@@ -12,10 +12,10 @@ GET     /assets/*file                       controllers.Assets.versioned(file)
 GET     /                                   controllers.HomeController.index
 
 # Master editor page
-GET     /cigarra/:id/level          controllers.EditorController.index(id)
+GET     /cigarra/:id/level          controllers.CigarraEditorController.index(id)
 
 # Create new Cigarra
 POST     /cigarra                           controllers.CigarraCreationController.create
 
 # Create new Cigarra
-POST     /cigarra/:id/level                 controllers.EditorController.createLevel(id)
+POST     /cigarra/:id/level                 controllers.CigarraEditorController.createLevel(id)
