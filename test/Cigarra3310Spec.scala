@@ -31,6 +31,16 @@ class Cigarra3310Spec
       val pageTitle = webDriver.findElement(By.id("name"))
       currentUrl matches """.*/cigarra/.*/editor"""
       pageTitle.getText mustEqual cigarraName
+
+      And("I fill a new Level description and solution")
+      val description = webDriver.findElement(By.id("description"))
+      val solution = webDriver.findElement(By.id("solution"))
+      description.sendKeys("some-description")
+      solution.sendKeys("some-solution")
+
+      Then("the page is reloaded")
+      description.getText mustEqual ""
+      solution.getText mustEqual ""
     }
   }
 }

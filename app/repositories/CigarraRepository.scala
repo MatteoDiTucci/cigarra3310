@@ -9,12 +9,13 @@ import scala.collection.mutable
 
 @Singleton
 class CigarraRepository @Inject()() {
-  def findCigarra(guid: String): Option[Cigarra] = cigarras.get(UUID.fromString(guid))
-
   val cigarras: mutable.Map[UUID, Cigarra] = mutable.Map()
 
-  def save(cigarra: Cigarra): Option[String] = {
+  def findCigarra(guid: String): Option[Cigarra] = cigarras.get(UUID.fromString(guid))
+
+  def save(cigarraWithoutGuid: Cigarra): Option[String] = {
     val guid: UUID = java.util.UUID.randomUUID
+    val cigarra = cigarraWithoutGuid.copy(guid = Some(guid.toString))
     cigarras.put(guid, cigarra)
     Some(guid.toString)
   }

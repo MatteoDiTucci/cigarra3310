@@ -16,3 +16,6 @@ GET     /cigarra/:cigarraId/editor          controllers.EditorController.index(c
 
 # Create new Cigarra
 POST     /cigarra                           controllers.CigarraCreationController.create
+
+# Create new Cigarra
+POST     /cigarra/:id/level                 controllers.EditorController.createLevel(id)

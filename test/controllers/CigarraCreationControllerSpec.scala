@@ -14,7 +14,7 @@ class CigarraCreationControllerSpec extends WordSpec with MustMatchers with Mock
 
     "receiving a valid POST request for creating a new Cigarra" when {
 
-      "the CigarraService is able to create a new Cigarra" should {
+      "it is possible to create a new Cigarra" should {
 
         "redirect to the Master editor page" in {
           val request = FakeRequest("POST", "/").withFormUrlEncodedBody("name" -> "some-name")
@@ -27,10 +27,11 @@ class CigarraCreationControllerSpec extends WordSpec with MustMatchers with Mock
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).get must endWith("/cigarra/some-id/editor")
+          verify(cigarraService, times(1)).createCigarra(any[String])
         }
       }
 
-      "the CigarraService is not able to create a new Cigarra" should {
+      "it is not possible to create a new Cigarra" should {
 
         "return an Internal Server error" in {
           val request = FakeRequest("POST", "/").withFormUrlEncodedBody("name" -> "some-name")
@@ -42,6 +43,7 @@ class CigarraCreationControllerSpec extends WordSpec with MustMatchers with Mock
           val result = controller.create()(request)
 
           status(result) mustEqual INTERNAL_SERVER_ERROR
+          verify(cigarraService, times(1)).createCigarra(any[String])
         }
       }
 

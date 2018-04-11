@@ -1,4 +1,4 @@
-@(cigarraName: String)
+@(cigarraName: String, cigarraGuid: String)
 
 <html lang="en">
     <head>
@@ -17,13 +17,13 @@
 
         <div class="h-50 row align-items-center">
             <div class="container">
-                <form>
+                <form action="/cigarra/@cigarraGuid/level" method="post">
                     <div class="form-group">
-                        <textarea class="form-control" id="description" rows="5" placeholder="Engima description" maxlength="4000" autocomplete="off" required></textarea>
+                        <textarea class="form-control" id="description" rows="5" name="description" placeholder="Engima description" maxlength="4000" autocomplete="off" required></textarea>
                     </div>
 
                     <div class="form-group">
-                        <input type="text" class="form-control" id="solution" placeholder="Enigma solution" maxlength="4000" autocomplete="off" required>
+                        <input type="text" class="form-control" id="solution" name="solution" placeholder="Enigma solution" maxlength="4000" autocomplete="off" required>
                     </div>
                     <button type="submit" class="btn btn-primary" id="continue">Continue</button>
                 </form>

@@ -1,5 +1,7 @@
 package repositories
 
+import java.util.UUID
+
 import domain.Cigarra
 import org.scalatest.{MustMatchers, WordSpec}
 
@@ -14,6 +16,7 @@ class CigarraRepositorySpec extends WordSpec with MustMatchers {
         val guid = cigarraRepository.save(Cigarra(name = "some-name"))
 
         guid mustBe defined
+        cigarraRepository.cigarras.get(UUID.fromString(guid.get)) mustBe defined
       }
     }
 
@@ -23,6 +26,7 @@ class CigarraRepositorySpec extends WordSpec with MustMatchers {
 
         "return the related Cigarra" in {
           val guid = java.util.UUID.randomUUID
+
           val cigarraRepository = new CigarraRepository()
           cigarraRepository.cigarras.put(guid, Cigarra(Some(guid.toString), "some-name"))
 
