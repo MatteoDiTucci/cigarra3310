@@ -10,30 +10,65 @@ import org.mockito.Mockito._
 class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
   "LevelService" when {
 
-    "receiving description and solution for a level" should {
+    "receiving description and solution for creating a level" when {
 
-      "create a level and return its guid" in {
-        val expectedGuid = "some-guid"
-        val levelRepository = mock[LevelRepository]
-        when(levelRepository.createLevel(any[String], any[Level])).thenReturn(Some(expectedGuid))
-        val service = new LevelService(levelRepository)
+      "the level can be created" should {
 
-        val guid = service.createLevel("some-cigarra-guid", "some-description", "some-solution")
+        "return its guid" in {
+          val expectedGuid = "some-guid"
+          val levelRepository = mock[LevelRepository]
+          when(levelRepository.createLevel(any[String], any[Level])).thenReturn(Some(expectedGuid))
+          val service = new LevelService(levelRepository)
 
-        guid mustBe Some(expectedGuid)
+          val guid = service.createLevel("some-cigarra-guid", "some-description", "some-solution")
+
+          guid mustBe Some(expectedGuid)
+        }
+      }
+
+      "the level cannot be created" should {
+
+        "return a None" in {
+          val levelRepository = mock[LevelRepository]
+          when(levelRepository.createLevel(any[String], any[Level])).thenReturn(None)
+          val service = new LevelService(levelRepository)
+
+          val guid = service.createLevel("some-cigarra-guid", "some-description", "some-solution")
+
+          guid mustBe None
+        }
       }
     }
 
-    "the level cannot be created" should {
+    "receiving a Cigarra guid to retrieve its first level" when {
 
-      "return a None" in {
-        val levelRepository = mock[LevelRepository]
-        when(levelRepository.createLevel(any[String], any[Level])).thenReturn(None)
-        val service = new LevelService(levelRepository)
+      "the level exists" should {
 
-        val guid = service.createLevel("some-cigarra-guid", "some-description", "some-solution")
+        "return the Level" in {
+          val expectedLevel = Level(Some("level-guid"), "description", "solution")
+          val levelRepository = mock[LevelRepository]
+          when(levelRepository.findFirstLevel(any[String]))
+            .thenReturn(Some(expectedLevel))
+          val service = new LevelService(levelRepository)
 
-        guid mustBe None
+          val guid = service.findFirstLevel("some-cigarra-guid")
+
+          guid mustBe Some(expectedLevel)
+        }
+      }
+
+      "the level does not exist" should {
+
+        "return None" in {
+          val levelRepository = mock[LevelRepository]
+          when(levelRepository.findFirstLevel(any[String]))
+            .thenReturn(None)
+          val service = new LevelService(levelRepository)
+
+          val guid = service.findFirstLevel("some-cigarra-guid")
+
+          guid mustBe None
+        }
       }
     }
   }

@@ -11,7 +11,7 @@ class LevelRepository {
   val cigarrasLevels: mutable.Map[UUID, ListBuffer[Level]] = mutable.Map()
 
   def createLevel(cigarraGuid: String, levelWithoutGuid: Level): Option[String] = {
-    val level = levelWithoutGuid.copy(guid = Some(java.util.UUID.randomUUID))
+    val level = levelWithoutGuid.copy(guid = Some(java.util.UUID.randomUUID.toString))
 
     cigarrasLevels.get(UUID.fromString(cigarraGuid)) match {
       case Some(levels: ListBuffer[Level]) => levels += level
@@ -19,4 +19,9 @@ class LevelRepository {
     }
     Some(level.guid.get.toString)
   }
+  def findFirstLevel(cigarraGuid: String): Option[Level] =
+    cigarrasLevels.get(UUID.fromString(cigarraGuid)) match {
+      case Some(levels) => Some(levels.head)
+      case None         => None
+    }
 }

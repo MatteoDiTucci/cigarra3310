@@ -1,16 +1,17 @@
 package controllers
 
+import domain.Level
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.test.Helpers._
 import play.api.test.{FakeRequest, Helpers}
 import play.api.http.Status.SEE_OTHER
-import services.CigarraService
+import services.{CigarraService, LevelService}
 import org.mockito.Mockito._
 import org.mockito.ArgumentMatchers.any
 
-class CigarraCreationControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
-  "CigarraCreationController" when {
+class CigarraControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
+  "CigarraController" when {
 
     "receiving a valid POST request for creating a new Cigarra" when {
 
@@ -59,8 +60,43 @@ class CigarraCreationControllerSpec extends WordSpec with MustMatchers with Mock
         }
       }
     }
+    "receiving a GET request for playing a Cigarra" when {
+
+      "the Cigarra exists" should {
+
+        "redirect to the the first level of the Cigarra" in {
+          val levelService = mock[LevelService]
+          when(levelService.findFirstLevel(any[String]))
+            .thenReturn(Some(Level(Some("some-level-guid"), "some-description", "some-solution")))
+          val controller = createController(levelService = levelService)
+
+          val cigarraGuid = "some-cigarra-guid"
+          val request = FakeRequest("GET", s"/cigarra/$cigarraGuid")
+          val result = controller.findFirstLevel(cigarraGuid)(request)
+
+          status(result) mustEqual SEE_OTHER
+        }
+      }
+
+      "the Cigarra does not exist" should {
+
+        "return a Bad Request" in {
+          val levelService = mock[LevelService]
+          when(levelService.findFirstLevel(any[String]))
+            .thenReturn(None)
+          val controller = createController(levelService = levelService)
+
+          val cigarraGuid = "some-cigarra-guid"
+          val request = FakeRequest("GET", s"/cigarra/$cigarraGuid")
+          val result = controller.findFirstLevel(cigarraGuid)(request)
+
+          status(result) mustEqual BAD_REQUEST
+        }
+      }
+    }
   }
 
-  private def createController(cigarraService: CigarraService = mock[CigarraService]) =
-    new CigarraCreationController(cigarraService)(Helpers.stubControllerComponents())
+  private def createController(cigarraService: CigarraService = mock[CigarraService],
+                               levelService: LevelService = mock[LevelService]) =
+    new CigarraController(cigarraService, levelService)(Helpers.stubControllerComponents())
 }

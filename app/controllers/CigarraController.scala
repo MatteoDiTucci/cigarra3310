@@ -2,20 +2,29 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 import play.api.mvc._
-import services.CigarraService
+import services.{CigarraService, LevelService}
 
 import scala.util.{Failure, Success, Try}
 
 @Singleton
-class CigarraCreationController @Inject()(cigarraService: CigarraService)(cc: ControllerComponents)
+class CigarraController @Inject()(cigarraService: CigarraService, levelService: LevelService)(cc: ControllerComponents)
     extends AbstractController(cc) {
-
   private val CIGARRA_NAME_FROM_KEY = "name"
 
   def create(): Action[AnyContent] = Action { request: Request[AnyContent] =>
     getCigarraName(request).fold(BadRequest("An error as occurred"))(createCigarraWithName)
-
   }
+
+  def findFirstLevel(cigarraGuid: String) = Action {
+    getFirstLevelGuid(cigarraGuid).fold(BadRequest("Cigarra not found"))(levelGuid =>
+      SeeOther(s"/cigarra/$cigarraGuid/level/$levelGuid"))
+  }
+
+  private def getFirstLevelGuid(cigarraGuid: String) =
+    for {
+      firstLevel <- levelService.findFirstLevel(cigarraGuid)
+      levelGuid <- firstLevel.guid
+    } yield levelGuid
 
   private def createCigarraWithName(name: String) =
     cigarraService

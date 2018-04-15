@@ -3,22 +3,28 @@
 # ~~~~
 
 # An example controller showing how to write asynchronous code
-GET     /message                            controllers.AsyncController.message
+GET     /message                                controllers.AsyncController.message
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file                       controllers.Assets.versioned(file)
+GET     /assets/*file                           controllers.Assets.versioned(file)
 
 # An example controller showing how to write asynchronous code
-GET     /                                   controllers.HomeController.index
+GET     /                                       controllers.HomeController.index
 
 # Master editor page
-GET     /cigarra/:id/level                  controllers.CigarraEditorController.index(id)
+GET     /cigarra/:id/level                      controllers.CigarraEditorController.index(id)
 
 # Create new Cigarra
-POST     /cigarra                           controllers.CigarraCreationController.create
+POST     /cigarra                               controllers.CigarraController.create
 
 # Add new Level
-POST     /cigarra/:id/level                 controllers.CigarraEditorController.createLevel(id)
+POST     /cigarra/:id/level                     controllers.CigarraEditorController.createLevel(id)
 
 # Master editor page
-GET     /cigarra/:id/publication            controllers.CigarraPublicationController.index(id)
+GET     /cigarra/:id/publication                controllers.CigarraPublicationController.index(id)
+
+# Play Level page
+GET     /cigarra/:cigarraId/level/:levelId      controllers.LevelController.level(cigarraId, levelId)
+
+# Master editor page
+GET     /cigarra/:id                            controllers.CigarraController.findFirstLevel(id)
