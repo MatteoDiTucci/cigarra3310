@@ -78,6 +78,7 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
       }
 
       "the Cigarra does not exist" should {
+
         "return a Bad Request" in {
           val cigarraService = mock[CigarraService]
           when(cigarraService.findCigarra(any[String])).thenReturn(None)

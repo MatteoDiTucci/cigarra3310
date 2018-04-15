@@ -1,18 +1,17 @@
 import org.openqa.selenium.By
-import org.scalatest.concurrent.PatienceConfiguration.Timeout
-import org.scalatest.time.{Seconds, Span}
+import org.scalatest.selenium.Chrome
 import org.scalatest.{FeatureSpec, GivenWhenThen, MustMatchers}
 import org.scalatestplus.play.guice.GuiceOneServerPerTest
-import org.scalatestplus.play.{HtmlUnitFactory, OneBrowserPerTest, ServerProvider}
+import org.scalatestplus.play.{HtmlUnitFactory, ServerProvider}
 
 class Cigarra3310Spec
     extends FeatureSpec
     with GivenWhenThen
-    with OneBrowserPerTest
     with GuiceOneServerPerTest
     with HtmlUnitFactory
     with ServerProvider
-    with MustMatchers {
+    with MustMatchers
+    with Chrome {
 
   feature("Cigarra3310") {
     scenario("As a master I want to create a Cigarra") {
