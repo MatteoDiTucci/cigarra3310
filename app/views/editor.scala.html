@@ -14,7 +14,7 @@
         <div class="h-75 row align-items-center">
             <div class="container">
                 <form action="/cigarra/@cigarraGuid/level" method="post">
-                    <label id="name">@cigarraName</label>
+                    <label id="name" class="h3">@cigarraName</label>
                     <div class="form-group">
                         <textarea class="form-control" id="description" rows="5" name="description" placeholder="Enigma description" maxlength="4000" autocomplete="off" required></textarea>
                     </div>
@@ -22,8 +22,8 @@
                     <div class="form-group">
                         <input type="text" class="form-control" id="solution" name="solution" placeholder="Enigma solution" maxlength="4000" autocomplete="off" required>
                     </div>
-                    <button type="submit" class="btn btn-primary" id="continue">Add another Enigma</button>
-                    <a href="/cigarra/@cigarraGuid/publication" class="btn btn-dark" role="button" id="finish">Finish</a>
+                    <button type="submit" class="btn btn-primary" id="continue">Add Enigma</button>
+                    <a href="/cigarra/@cigarraGuid/publication" class="btn btn-dark" role="button" id="finish">Publish Cigarra</a>
                 </form>
             </div>
         </div>
