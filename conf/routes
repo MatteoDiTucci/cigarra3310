@@ -28,3 +28,6 @@ GET     /cigarra/:cigarraId/level/:levelId      controllers.LevelController.leve
 
 # Master editor page
 GET     /cigarra/:id                            controllers.CigarraController.findFirstLevel(id)
+
+# Solve Level
+POST    /cigarra/:cigarraId/level/:levelId      controllers.LevelController.solveLevel(cigarraId, levelId)

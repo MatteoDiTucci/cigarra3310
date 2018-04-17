@@ -13,8 +13,8 @@ class CigarraPublicationController @Inject()(cigarraService: CigarraService, pla
   def index(cigarraGuid: String) = Action {
     cigarraService
       .findCigarra(cigarraGuid)
-      .fold(InternalServerError("An error has occurred"))(_ =>
-        Ok(views.html.publication(s"${playConfiguration.get[String]("host.url")}/cigarra/$cigarraGuid")))
+      .fold(InternalServerError("Cigarra not found"))(cigarra =>
+        Ok(views.html.publication(cigarra.name, s"/cigarra/$cigarraGuid")))
   }
 
 }

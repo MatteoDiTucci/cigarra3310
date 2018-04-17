@@ -1,8 +1,7 @@
 import org.openqa.selenium.By
-import org.scalatest.selenium.Chrome
 import org.scalatest.{FeatureSpec, GivenWhenThen, MustMatchers}
 import org.scalatestplus.play.guice.GuiceOneServerPerTest
-import org.scalatestplus.play.{HtmlUnitFactory, ServerProvider}
+import org.scalatestplus.play.{HtmlUnitFactory, OneBrowserPerTest, ServerProvider}
 
 class Cigarra3310Spec
     extends FeatureSpec
@@ -11,7 +10,7 @@ class Cigarra3310Spec
     with HtmlUnitFactory
     with ServerProvider
     with MustMatchers
-    with Chrome {
+    with OneBrowserPerTest {
 
   feature("Cigarra3310") {
     scenario("As a master I want to create a Cigarra") {
@@ -34,18 +33,28 @@ class Cigarra3310Spec
       pageTitle.getText mustEqual cigarraName
 
       And("I fill description and solution of a new Level")
-      val description = webDriver.findElement(By.id("description"))
-      val solution = webDriver.findElement(By.id("solution"))
-      description.sendKeys("some-description")
-      solution.sendKeys("some-solution")
+      val firstLevelDescription = webDriver.findElement(By.id("description"))
+      val firstLevelSolution = webDriver.findElement(By.id("solution"))
+      firstLevelDescription.sendKeys("first-level-description")
+      firstLevelSolution.sendKeys("first-level-solution")
+
+      And("I click on the add level button")
+      val addFirstLevelButton = webDriver.findElement(By.id("add-level"))
+      clickOn(addFirstLevelButton)
 
       Then("the page is reloaded")
-      description.getText mustEqual ""
-      solution.getText mustEqual ""
+      val secondLevelDescription = webDriver.findElement(By.id("description"))
+      val secondLevelSolution = webDriver.findElement(By.id("solution"))
+      secondLevelDescription.getAttribute("value") mustEqual ""
+      secondLevelSolution.getAttribute("value") mustEqual ""
 
       And("I create another new Level")
-      description.sendKeys("some-description")
-      solution.sendKeys("some-solution")
+      secondLevelDescription.sendKeys("second-level-description")
+      secondLevelSolution.sendKeys("second-level-solution")
+
+      And("I click on the add level button")
+      val addSecondLevelButton = webDriver.findElement(By.id("add-level"))
+      clickOn(addSecondLevelButton)
 
       And("I finish the Cicada creation")
       val finishButton = webDriver.findElement(By.id("finish"))
@@ -57,43 +66,42 @@ class Cigarra3310Spec
     }
 
     scenario("As a Player I want to play a Cigarra") {
-      pendingUntilFixed {
-        Given("A Cigarra was created")
-        val homePage = "http://localhost:" + port + "/"
-        go to homePage
+      Given("A Cigarra was created")
+      val homePage = "http://localhost:" + port + "/"
+      go to homePage
 
-        val nameEditText = webDriver.findElement(By.id("name"))
-        val cigarraName = "some-name"
-        nameEditText.sendKeys(cigarraName)
+      val nameEditText = webDriver.findElement(By.id("name"))
+      val cigarraName = "some-name"
+      nameEditText.sendKeys(cigarraName)
 
-        val newCigarraButton = webDriver.findElement(By.id("create"))
-        clickOn(newCigarraButton)
+      val newCigarraButton = webDriver.findElement(By.id("create"))
+      clickOn(newCigarraButton)
 
-        val description = webDriver.findElement(By.id("description"))
-        val solution = webDriver.findElement(By.id("solution"))
-        description.sendKeys("some-description")
-        solution.sendKeys("some-solution")
+      val firstLevelDescriptionEditor = webDriver.findElement(By.id("description"))
+      val firstLevelSolutionEditor = webDriver.findElement(By.id("solution"))
+      firstLevelDescriptionEditor.sendKeys("first level description")
+      firstLevelSolutionEditor.sendKeys("first level solution")
 
-        description.sendKeys("some-description")
-        solution.sendKeys("some-solution")
+      val addFirstLevelButton = webDriver.findElement(By.id("add-level"))
+      clickOn(addFirstLevelButton)
 
-        val finishButton = webDriver.findElement(By.id("finish"))
-        clickOn(finishButton)
+      val finishButton = webDriver.findElement(By.id("finish"))
+      clickOn(finishButton)
 
-        And("I navigate to the url for a Cigarra")
-        val cigarraPage = "http://localhost:" + port + "/cigarra/13b497c2-ab38-1098-b863-abc13459573a"
-        go to cigarraPage
+      val cicadaLink = webDriver.findElement(By.id("url"))
 
-        And("I fill in the solution for the first level")
-        val firstLevelSolution = webDriver.findElement(By.id("solution"))
-        firstLevelSolution.sendKeys("first level solution")
+      And("I navigate to the url for a Cigarra")
+      clickOn(cicadaLink)
 
-        val submitSolutionButton = webDriver.findElement(By.id("submit"))
-        clickOn(submitSolutionButton)
+      And("I fill in the solution for the first level")
+      val firstLevelSolution = webDriver.findElement(By.id("solution"))
+      firstLevelSolution.sendKeys("first level solution")
 
-        Then("I am redirected to the next level")
-        !(currentUrl contains "/cigarra/some-cigarra-guid/level/some-level-guid") && (currentUrl contains "/cigarra/some-cigarra-guid/level/")
-      }
+      val submitSolutionButton = webDriver.findElement(By.id("submit"))
+      clickOn(submitSolutionButton)
+
+      Then("I am redirected to the next level")
+      !(currentUrl contains "/cigarra/some-cigarra-guid/level/some-level-guid") && (currentUrl contains "/cigarra/some-cigarra-guid/level/")
     }
   }
 }
