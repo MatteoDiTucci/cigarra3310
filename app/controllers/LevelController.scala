@@ -13,16 +13,27 @@ class LevelController @Inject()(cigarraService: CigarraService, levelService: Le
   private val LEVEL_SOLUTION_FROM_KEY = "solution"
 
   def solveLevel(cigarraGuid: String, levelGuid: String): Action[AnyContent] = Action { request: Request[AnyContent] =>
-    (for {
-      solution <- getSolutionFromBody(request)
-      nextLevel <- levelService.solveLevel(cigarraGuid, levelGuid, solution)
-      nextLevelGuid <- nextLevel.guid
-    } yield nextLevelGuid) match {
-      case None => SeeOther(s"/cigarra/$cigarraGuid/level/$levelGuid")
-      case Some(nextLevelGuid) =>
-        SeeOther(s"/cigarra/$cigarraGuid/level/$nextLevelGuid")
+    isSolutionCorrect(cigarraGuid, levelGuid, request) match {
+      case None        => BadRequest("Level not found")
+      case Some(false) => redirectToCurrentLevel(cigarraGuid, levelGuid)
+      case Some(true)  => redirectToNextLevel(cigarraGuid, levelGuid)
     }
   }
+
+  private def redirectToCurrentLevel(cigarraGuid: String, levelGuid: String) =
+    SeeOther(s"/cigarra/$cigarraGuid/level/$levelGuid")
+
+  private def redirectToNextLevel(cigarraGuid: String, levelGuid: String) =
+    levelService.findNextLevel(cigarraGuid, levelGuid) match {
+      case None        => Ok(views.html.end("The End"))
+      case Some(level) => SeeOther(s"/cigarra/$cigarraGuid/level/${level.guid.getOrElse("level-guid-not-defined")}")
+    }
+
+  private def isSolutionCorrect(cigarraGuid: String, levelGuid: String, request: Request[AnyContent]) =
+    for {
+      solution <- getSolutionFromBody(request)
+      isSolved <- levelService.solveLevel(cigarraGuid, levelGuid, solution)
+    } yield isSolved
 
   def level(cigarraGuid: String, levelGuid: String) = Action {
     (for {

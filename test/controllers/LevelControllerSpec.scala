@@ -7,8 +7,11 @@ import play.api.mvc.Results
 import play.api.test._
 import services.{CigarraService, LevelService}
 import org.mockito.Mockito._
+
 import scala.concurrent.duration._
 import org.mockito.ArgumentMatchers.any
+import play.api.http.Status.BAD_REQUEST
+import play.api.test.Helpers._
 
 import scala.concurrent.Await
 
@@ -39,7 +42,7 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
       val cigarraService = mock[CigarraService]
       when(cigarraService.findCigarra(any[String])).thenReturn(Some(cigarra))
 
-      "the solution is correct" should {
+      "the solution is correct and the current level is not the final one" should {
 
         "redirect to the next level" in {
           val request =
@@ -49,6 +52,8 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
           val nextLevel = Level(Some("next-level-guid"), "next-level-description", "next-level-solution")
           val levelService = mock[LevelService]
           when(levelService.solveLevel(any[String], any[String], any[String]))
+            .thenReturn(Some(true))
+          when(levelService.findNextLevel(any[String], any[String]))
             .thenReturn(Some(nextLevel))
 
           val controller = new LevelController(cigarraService, levelService)(Helpers.stubControllerComponents())
@@ -60,7 +65,30 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
         }
       }
 
-      "the solution is correct" should {
+      "the solution is correct and the next level is the final one" should {
+
+        "redirect to the finish page" in {
+          val request =
+            FakeRequest("POST", "/cigarra/some-cigarra-guid/level/current-level-guid")
+              .withFormUrlEncodedBody("solution" -> "current-level-solution")
+
+          val nextLevel = Level(Some("next-level-guid"), "next-level-description", "next-level-solution")
+          val levelService = mock[LevelService]
+          when(levelService.solveLevel(any[String], any[String], any[String]))
+            .thenReturn(Some(true))
+          when(levelService.findNextLevel(any[String], any[String]))
+            .thenReturn(None)
+
+          val controller = new LevelController(cigarraService, levelService)(Helpers.stubControllerComponents())
+
+          val result = controller.solveLevel(cigarra.guid.get, "current-level-guid")(request)
+
+          status(result) mustBe OK
+          contentAsString(result) contains "The End"
+        }
+      }
+
+      "the solution is not correct" should {
 
         "redirect to the current level" in {
           val request =
@@ -69,7 +97,7 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
 
           val levelService = mock[LevelService]
           when(levelService.solveLevel(any[String], any[String], any[String]))
-            .thenReturn(None)
+            .thenReturn(Some(false))
 
           val controller = new LevelController(cigarraService, levelService)(Helpers.stubControllerComponents())
 
@@ -77,6 +105,24 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
             Await.result(controller.solveLevel(cigarra.guid.get, "current-level-guid")(request), 1.second)
 
           result mustEqual Results.SeeOther("/cigarra/some-cigarra-guid/level/current-level-guid")
+        }
+      }
+
+      "the Level cannot be found" should {
+
+        "return Bad Request" in {
+          val request =
+            FakeRequest("POST", "/cigarra/some-cigarra-guid/level/current-level-guid")
+              .withFormUrlEncodedBody("solution" -> "some-solution")
+
+          val levelService = mock[LevelService]
+          when(levelService.solveLevel(any[String], any[String], any[String])).thenReturn(None)
+
+          val controller = new LevelController(cigarraService, levelService)(Helpers.stubControllerComponents())
+
+          val result = controller.solveLevel(cigarra.guid.get, "current-level-guid")(request)
+
+          status(result) mustBe BAD_REQUEST
         }
       }
     }

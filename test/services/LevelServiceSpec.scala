@@ -79,35 +79,50 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
 
       "the solution is correct" should {
 
-        "return the next Level" in {
-          val nextLevel = Level(Some("some-guid"), "some-description", "some-solution")
-          when(levelRepository.findNextLevel(any[String], any[String]))
-            .thenReturn(Some(nextLevel))
+        "return true" in {
+          val level = Level(Some("some-guid"), "some-description", "some-solution")
+          when(levelRepository.findLevel(any[String], any[String]))
+            .thenReturn(Some(level))
 
           val service = new LevelService(levelRepository)
 
-          val result = service.solveLevel("cigarra-guid", "current-level-guid", "current-level-solution")
+          val result = service.solveLevel("cigarra-guid", "some-guid", "some-solution")
 
-          result mustBe Some(nextLevel)
+          result mustBe Some(true)
         }
       }
 
       "the solution is not correct" should {
 
-        "return None" in {
-          when(levelRepository.findNextLevel(any[String], any[String]))
+        "return false" in {
+          val level = Level(Some("some-guid"), "some-description", "some-solution")
+          when(levelRepository.findLevel(any[String], any[String]))
+            .thenReturn(Some(level))
+
+          val service = new LevelService(levelRepository)
+
+          val result = service.solveLevel("cigarra-guid", "some-guid", "bad-solution")
+
+          result mustBe Some(false)
+        }
+      }
+
+      "the Level cannot be found" should {
+
+        "return false" in {
+          when(levelRepository.findLevel(any[String], any[String]))
             .thenReturn(None)
 
           val service = new LevelService(levelRepository)
 
-          val result = service.solveLevel("cigarra-guid", "current-level-guid", "current-level-solution")
+          val result = service.solveLevel("cigarra-guid", "some-guid", "bad-solution")
 
           result mustBe None
         }
       }
     }
 
-    "receiving a Cigarra and a Level guids to retrieve a Level" when {
+    "receiving a Cigarra and a Level guid to retrieve a Level" when {
 
       "the Level exists" should {
 
@@ -135,6 +150,40 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
           val service = new LevelService(levelRepository)
 
           val result = service.findLevel("cigarra-guid", "current-level-guid")
+
+          result mustBe None
+        }
+      }
+    }
+
+    "receiving a Cigarra and a Level guid to retrieve the next Level" when {
+
+      "the next level exists" should {
+
+        "return the next Level" in {
+          val levelRepository = mock[LevelRepository]
+          val level = Level(Some("next-level-guid"), "next-level-description", "next-level-solution")
+          when(levelRepository.findNextLevel(any[String], any[String]))
+            .thenReturn(Some(level))
+
+          val service = new LevelService(levelRepository)
+
+          val result = service.findNextLevel("cigarra-guid", "current-level-guid")
+
+          result mustBe Some(level)
+        }
+      }
+
+      "the next level does not exist" should {
+
+        "return None" in {
+          val levelRepository = mock[LevelRepository]
+          when(levelRepository.findNextLevel(any[String], any[String]))
+            .thenReturn(None)
+
+          val service = new LevelService(levelRepository)
+
+          val result = service.findNextLevel("cigarra-guid", "current-level-guid")
 
           result mustBe None
         }
