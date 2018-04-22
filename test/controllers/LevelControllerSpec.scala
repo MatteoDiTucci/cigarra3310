@@ -84,7 +84,7 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
           val result = controller.solveLevel(cigarra.guid.get, "current-level-guid")(request)
 
           status(result) mustBe OK
-          contentAsString(result) contains "The End"
+          contentAsString(result) must include("The End")
         }
       }
 

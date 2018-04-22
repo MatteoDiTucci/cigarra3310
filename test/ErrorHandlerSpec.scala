@@ -13,7 +13,7 @@ class ErrorHandlerSpec extends WordSpec with MustMatchers {
         val result = errorHandler.onServerError(FakeRequest(), new RuntimeException())
 
         status(result) mustBe OK
-        contentAsString(result) contains "Sorry, an error occurred"
+        contentAsString(result) must include("Sorry, an error occurred")
       }
     }
 
@@ -26,7 +26,7 @@ class ErrorHandlerSpec extends WordSpec with MustMatchers {
         val result = errorHandler.onClientError(FakeRequest(), someStatusCode, "some-message")
 
         status(result) mustBe OK
-        contentAsString(result) contains "Sorry, an error occurred"
+        contentAsString(result) must include("Sorry, an error occurred")
       }
     }
   }

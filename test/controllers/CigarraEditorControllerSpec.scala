@@ -27,8 +27,8 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
 
           val result = controller.index(cigarraGuid)(FakeRequest())
 
-          contentAsString(result) contains cigarraName
-          contentAsString(result) contains cigarraGuid
+          contentAsString(result) must include(cigarraName)
+          contentAsString(result) must include(cigarraGuid)
         }
       }
 
@@ -68,8 +68,9 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
 
           val result = controller.createLevel("some-cigarra-guid")(request)
 
-          contentAsString(result) contains cigarraName
-          contentAsString(result) contains cigarraGuid
+          contentAsString(result) must include(cigarraName)
+          contentAsString(result) must include(cigarraGuid)
+          contentAsString(result) must include("Feedback")
 
           eventually {
             verify(levelService, times(1)).createLevel(any[String], any[String], any[String])

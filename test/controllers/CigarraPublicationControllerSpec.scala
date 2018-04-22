@@ -23,8 +23,8 @@ class CigarraPublicationControllerSpec extends WordSpec with MustMatchers with M
 
         val result = controller.index("some-cigarra-guid")(FakeRequest())
 
-        contentAsString(result) contains "some-cigarra-guid"
-        contentAsString(result) contains "some-cigarra-name"
+        contentAsString(result) must include("some-cigarra-guid")
+        contentAsString(result) must include("some-cigarra-name")
       }
     }
   }
