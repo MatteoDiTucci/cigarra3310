@@ -20,7 +20,7 @@ class CigarraControllerSpec extends WordSpec with MustMatchers with MockitoSugar
         "redirect to the Master editor page" in {
           val request = FakeRequest("POST", "/").withFormUrlEncodedBody("name" -> "some-name")
           val cigarraService = mock[CigarraService]
-          when(cigarraService.createCigarra(any[String])).thenReturn(Some("some-id"))
+          when(cigarraService.createCigarra(any[String])).thenReturn("some-id")
 
           val controller = createController(cigarraService)
 
@@ -28,22 +28,6 @@ class CigarraControllerSpec extends WordSpec with MustMatchers with MockitoSugar
 
           status(result) mustEqual SEE_OTHER
           redirectLocation(result).get must endWith("/cigarra/some-id/level")
-          verify(cigarraService, times(1)).createCigarra(any[String])
-        }
-      }
-
-      "it is not possible to create a new Cigarra" should {
-
-        "return an Internal Server error" in {
-          val request = FakeRequest("POST", "/").withFormUrlEncodedBody("name" -> "some-name")
-          val cigarraService = mock[CigarraService]
-          when(cigarraService.createCigarra(any[String])).thenReturn(None)
-
-          val controller = createController(cigarraService)
-
-          val result = controller.create()(request)
-
-          status(result) mustEqual INTERNAL_SERVER_ERROR
           verify(cigarraService, times(1)).createCigarra(any[String])
         }
       }

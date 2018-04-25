@@ -1,35 +1,42 @@
 package controllers
 
+import domain.Cigarra
 import javax.inject._
 import play.api.mvc._
 import services.{CigarraService, LevelService}
 
 import scala.util.{Failure, Success, Try}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CigarraEditorController @Inject()(cigarraService: CigarraService, levelService: LevelService)(
-    cc: ControllerComponents)
+    cc: ControllerComponents)(implicit ex: ExecutionContext)
     extends AbstractController(cc) {
 
   private val LEVEL_DESCRIPTION_FROM_KEY = "description"
   private val LEVEL_SOLUTION_FROM_KEY = "solution"
 
-  def index(cigarraGuid: String) = Action {
-    cigarraService.findCigarra(cigarraGuid) match {
-      case Some(cigarra) => Ok(views.html.editor(cigarra.name, cigarraGuid))
-      case None          => InternalServerError("An Error has occurred")
-    }
-  }
-
-  def createLevel(cigarraGuid: String): Action[AnyContent] = Action { request =>
+  def index(cigarraGuid: String): Action[AnyContent] = Action.async {
     cigarraService
       .findCigarra(cigarraGuid)
-      .fold(BadRequest("Cigarra not found"))(
-        cigarra =>
-          getDescriptionAndSolutionFromRequest(request).fold(BadRequest("Missing description or solution"))(
-            descriptionAndSolution =>
-              createLevelWithDescriptionAndSolution(cigarra.guid.getOrElse("no-cigarra-guid"), descriptionAndSolution)
-                .fold(InternalServerError("An error occurred"))(_ => Ok(views.html.editor(cigarra.name, cigarraGuid)))))
+      .map(someCigarra => Ok(views.html.editor(someCigarra.get.name, cigarraGuid)))
+      .recoverWith {
+        case _: Throwable => Future.successful(InternalServerError)
+      }
+  }
+  def createLevel(cigarraGuid: String): Action[AnyContent] = Action.async { request =>
+    cigarraService
+      .findCigarra(cigarraGuid)
+      .map { cigarra =>
+        getDescriptionAndSolutionFromRequest(request).fold(BadRequest("Missing description or solution"))(
+          descriptionAndSolution =>
+            createLevelWithDescriptionAndSolution(cigarra.get.guid.getOrElse("no-cigarra-guid"), descriptionAndSolution)
+              .fold(InternalServerError("An error occurred"))(_ =>
+                Ok(views.html.editor(cigarra.get.name, cigarraGuid))))
+      }
+      .recoverWith {
+        case _: Throwable => Future.successful(BadRequest("Missing description or solution"))
+      }
   }
 
   private def createLevelWithDescriptionAndSolution(cigarraGuid: String, descriptionAndSolution: (String, String)) =

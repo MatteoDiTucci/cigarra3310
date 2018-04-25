@@ -4,6 +4,8 @@ import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import services.{CigarraService, LevelService}
 
+import scala.concurrent.Await
+import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
 @Singleton
@@ -37,7 +39,7 @@ class LevelController @Inject()(cigarraService: CigarraService, levelService: Le
 
   def level(cigarraGuid: String, levelGuid: String) = Action {
     (for {
-      cigarra <- cigarraService.findCigarra(cigarraGuid)
+      cigarra <- Await.result(cigarraService.findCigarra(cigarraGuid), 1.second)
       level <- levelService.findLevel(cigarraGuid, levelGuid)
     } yield (cigarra, level)) match {
       case None => BadRequest("Cigarra or level not found")

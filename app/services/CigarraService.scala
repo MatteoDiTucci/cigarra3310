@@ -4,9 +4,16 @@ import domain.Cigarra
 import javax.inject.{Inject, Singleton}
 import repositories.CigarraRepository
 
+import scala.concurrent.Future
 @Singleton
 class CigarraService @Inject()(cigarraRepository: CigarraRepository) {
-  def createCigarra(name: String): Option[String] = cigarraRepository.save(Cigarra(name = name))
 
-  def findCigarra(guid: String): Option[Cigarra] = cigarraRepository.findCigarra(guid)
+  def findCigarra(guid: String): Future[Option[Cigarra]] =
+    cigarraRepository.findCigarra(guid)
+
+  def createCigarra(cigarraName: String): String = {
+    val guid = java.util.UUID.randomUUID.toString
+    cigarraRepository.save(guid, cigarraName)
+    guid
+  }
 }

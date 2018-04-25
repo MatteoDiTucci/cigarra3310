@@ -2,21 +2,54 @@ package repositories
 
 import java.util.UUID
 
+import anorm._
+import anorm.SqlParser._
 import domain.Cigarra
-import javax.inject.{Inject, Singleton}
+import javax.inject.{Inject, Named, Singleton}
+import play.api.db.Database
 
-import scala.collection.mutable
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CigarraRepository @Inject()() {
-  val cigarras: mutable.Map[UUID, Cigarra] = mutable.Map()
+class CigarraRepository @Inject()(db: Database)(
+    @Named("database-execution-context") private implicit val ec: ExecutionContext) {
 
-  def findCigarra(guid: String): Option[Cigarra] = cigarras.get(UUID.fromString(guid))
-
-  def save(cigarraWithoutGuid: Cigarra): Option[String] = {
-    val guid: UUID = java.util.UUID.randomUUID
-    val cigarra = cigarraWithoutGuid.copy(guid = Some(guid.toString))
-    cigarras.put(guid, cigarra)
-    Some(guid.toString)
+  def findCigarra(guid: String): Future[Option[Cigarra]] = Future {
+    db.withConnection { implicit connection =>
+      SQL(
+        """
+          SELECT guid,name
+          FROM cigarra
+          WHERE guid = {guid};
+        """
+      ).on(
+          'guid -> guid
+        )
+        .as(cigarras.singleOpt)
+    }
   }
+
+  def save(guid: String, name: String) =
+    Future {
+      db.withConnection { implicit connection =>
+        SQL(
+          """
+                INSERT INTO cigarra
+                VALUES ({guid}, {name});
+          """
+        ).on(
+            'guid -> guid,
+            'name -> name
+          )
+          .execute()
+      }
+    }
+
+  val cigarras: RowParser[Cigarra] =
+    str("guid") ~
+      str("name") map {
+      case guid ~ name =>
+        Cigarra(Option(guid), name)
+    }
+
 }

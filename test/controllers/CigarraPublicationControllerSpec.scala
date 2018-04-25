@@ -10,6 +10,9 @@ import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import play.api.Configuration
 
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class CigarraPublicationControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
   "CigarraPublicationController" when {
 
@@ -17,8 +20,9 @@ class CigarraPublicationControllerSpec extends WordSpec with MustMatchers with M
 
       "return the url for playing to the Cigarra" in {
         val cigarraService = mock[CigarraService]
+        val cigarra = Cigarra(Some("some-cigarra-guid"), "some-cigarra-name")
         when(cigarraService.findCigarra(any[String]))
-          .thenReturn(Some(Cigarra(Some("some-cigarra-guid"), "some-cigarra-name")))
+          .thenReturn(Future.successful(Some(cigarra)))
         val controller = createController(cigarraService)
 
         val result = controller.index("some-cigarra-guid")(FakeRequest())

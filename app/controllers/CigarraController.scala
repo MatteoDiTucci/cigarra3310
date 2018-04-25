@@ -9,27 +9,17 @@ import scala.util.{Failure, Success, Try}
 @Singleton
 class CigarraController @Inject()(cigarraService: CigarraService, levelService: LevelService)(cc: ControllerComponents)
     extends AbstractController(cc) {
+
   private val CIGARRA_NAME_FROM_KEY = "name"
 
   def create(): Action[AnyContent] = Action { request: Request[AnyContent] =>
     getCigarraName(request).fold(BadRequest("An error as occurred"))(createCigarraWithName)
   }
 
-  def findFirstLevel(cigarraGuid: String) = Action {
-    getFirstLevelGuid(cigarraGuid).fold(BadRequest("Cigarra not found"))(levelGuid =>
-      SeeOther(s"/cigarra/$cigarraGuid/level/$levelGuid"))
+  private def createCigarraWithName(name: String) = {
+    val guid = cigarraService.createCigarra(name)
+    redirectToEditorWithGuid(guid)
   }
-
-  private def getFirstLevelGuid(cigarraGuid: String) =
-    for {
-      firstLevel <- levelService.findFirstLevel(cigarraGuid)
-      levelGuid <- firstLevel.guid
-    } yield levelGuid
-
-  private def createCigarraWithName(name: String) =
-    cigarraService
-      .createCigarra(name)
-      .fold(InternalServerError("An error has occurred"))(redirectToEditorWithGuid)
 
   private def redirectToEditorWithGuid(guid: String) =
     SeeOther(s"/cigarra/$guid/level")
@@ -45,4 +35,15 @@ class CigarraController @Inject()(cigarraService: CigarraService, levelService: 
       case Failure(_)      => None
       case Success(values) => Some(values.head)
     }
+
+  def findFirstLevel(cigarraGuid: String) = Action {
+    getFirstLevelGuid(cigarraGuid).fold(BadRequest("Cigarra not found"))(levelGuid =>
+      SeeOther(s"/cigarra/$cigarraGuid/level/$levelGuid"))
+  }
+
+  private def getFirstLevelGuid(cigarraGuid: String) =
+    for {
+      firstLevel <- levelService.findFirstLevel(cigarraGuid)
+      levelGuid <- firstLevel.guid
+    } yield levelGuid
 }

@@ -10,6 +10,9 @@ import play.api.test.Helpers._
 import play.api.test._
 import services.{CigarraService, LevelService}
 import org.scalatest.concurrent.Eventually.eventually
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import scala.concurrent.Future
 
 class CigarraEditorControllerSpec extends WordSpec with MustMatchers with MockitoSugar with Results {
   "CigarraEditorController" when {
@@ -22,7 +25,8 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
           val cigarraName = "some-name"
           val cigarraGuid = "some-cigarra-guid"
           val cigarraService = mock[CigarraService]
-          when(cigarraService.findCigarra(any[String])).thenReturn(Some(Cigarra(name = cigarraName)))
+          when(cigarraService.findCigarra(any[String]))
+            .thenReturn(Future.successful(Some(Cigarra(name = cigarraName))))
           val controller = createController(cigarraService = cigarraService)
 
           val result = controller.index(cigarraGuid)(FakeRequest())
@@ -35,13 +39,11 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
       "the Cigarra does not exists" should {
 
         "return an Internal Error" in {
-          val cigarraName = "some-name"
-          val cigarraGuid = "some-cigarra-guid"
           val cigarraService = mock[CigarraService]
-          when(cigarraService.findCigarra(any[String])).thenReturn(None)
+          when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(None))
           val controller = createController(cigarraService = cigarraService)
 
-          val result = controller.index(cigarraGuid)(FakeRequest())
+          val result = controller.index("some-cigarra-guid")(FakeRequest())
 
           status(result) mustBe INTERNAL_SERVER_ERROR
         }
@@ -62,7 +64,8 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
 
           val cigarraName = "some-name"
           val cigarraService = mock[CigarraService]
-          when(cigarraService.findCigarra(any[String])).thenReturn(Some(Cigarra(name = cigarraName)))
+          val cigarra = Cigarra(name = cigarraName)
+          when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(Some(cigarra)))
 
           val controller = createController(cigarraService, levelService)
 
@@ -82,7 +85,7 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
 
         "return a Bad Request" in {
           val cigarraService = mock[CigarraService]
-          when(cigarraService.findCigarra(any[String])).thenReturn(None)
+          when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(None))
           val controller = createController(cigarraService)
 
           val result = controller.createLevel("bad-cigarra-guid")(request)
@@ -98,8 +101,9 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
         FakeRequest("POST", s"/cigarra/some-cigarra-guid/level").withFormUrlEncodedBody("solution" -> "some-solution")
 
       "return a BadRequest" in {
+        val cigarra = Cigarra(name = "some-cigarra-name")
         val cigarraService = mock[CigarraService]
-        when(cigarraService.findCigarra(any[String])).thenReturn(Some(Cigarra(name = "some-cigarra-name")))
+        when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(Some(cigarra)))
 
         val controller = createController(cigarraService)
 
@@ -116,7 +120,8 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
 
       "return a BadRequest" in {
         val cigarraService = mock[CigarraService]
-        when(cigarraService.findCigarra(any[String])).thenReturn(Some(Cigarra(name = "some-cigarra-name")))
+        val cigarra = Cigarra(name = "some-cigarra-name")
+        when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(Some(cigarra)))
 
         val controller = createController(cigarraService)
 
@@ -134,7 +139,8 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
             .withFormUrlEncodedBody("description" -> "some-description", "solution" -> "some-solution")
 
         val cigarraService = mock[CigarraService]
-        when(cigarraService.findCigarra(any[String])).thenReturn(Some(Cigarra(name = "some-cigarra-name")))
+        val cigarra = Cigarra(name = "some-cigarra-name")
+        when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(Some(cigarra)))
         val levelService = mock[LevelService]
         when(levelService.createLevel(any[String], any[String], any[String])).thenReturn(None)
 

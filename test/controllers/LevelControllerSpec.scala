@@ -13,7 +13,7 @@ import org.mockito.ArgumentMatchers.any
 import play.api.http.Status.BAD_REQUEST
 import play.api.test.Helpers._
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 
 class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
   "LevelController" when {
@@ -23,7 +23,7 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
       "return the play Level page" in {
         val cigarra = Cigarra(Some("some-cigarra-guid"), "some-cigarra-name")
         val cigarraService = mock[CigarraService]
-        when(cigarraService.findCigarra(cigarra.guid.get)).thenReturn(Some(cigarra))
+        when(cigarraService.findCigarra(cigarra.guid.get)).thenReturn(Future.successful(Some(cigarra)))
 
         val level = Level(Some("some-level-guid"), "some-cigarra-name", "some-solution")
         val levelService = mock[LevelService]
@@ -40,7 +40,7 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
     "receiving a POST request to submit the solution of a Cigarra Level" when {
       val cigarra = Cigarra(Some("some-cigarra-guid"), "some-cigarra-name")
       val cigarraService = mock[CigarraService]
-      when(cigarraService.findCigarra(any[String])).thenReturn(Some(cigarra))
+      when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(Some(cigarra)))
 
       "the solution is correct and the current level is not the final one" should {
 
