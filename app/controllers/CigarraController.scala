@@ -37,13 +37,8 @@ class CigarraController @Inject()(cigarraService: CigarraService, levelService: 
     }
 
   def findFirstLevel(cigarraGuid: String) = Action {
-    getFirstLevelGuid(cigarraGuid).fold(BadRequest("Cigarra not found"))(levelGuid =>
-      SeeOther(s"/cigarra/$cigarraGuid/level/$levelGuid"))
+    val firstLevel = levelService.findFirstLevel(cigarraGuid)
+    firstLevel.fold(BadRequest("Cigarra not found"))(level => SeeOther(s"/cigarra/$cigarraGuid/level/${level.guid}"))
   }
 
-  private def getFirstLevelGuid(cigarraGuid: String) =
-    for {
-      firstLevel <- levelService.findFirstLevel(cigarraGuid)
-      levelGuid <- firstLevel.guid
-    } yield levelGuid
 }

@@ -28,7 +28,7 @@ class LevelController @Inject()(cigarraService: CigarraService, levelService: Le
   private def redirectToNextLevel(cigarraGuid: String, levelGuid: String) =
     levelService.findNextLevel(cigarraGuid, levelGuid) match {
       case None        => Ok(views.html.end("The End"))
-      case Some(level) => SeeOther(s"/cigarra/$cigarraGuid/level/${level.guid.getOrElse("level-guid-not-defined")}")
+      case Some(level) => SeeOther(s"/cigarra/$cigarraGuid/level/${level.guid}")
     }
 
   private def isSolutionCorrect(cigarraGuid: String, levelGuid: String, request: Request[AnyContent]) =

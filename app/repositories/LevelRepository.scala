@@ -22,14 +22,12 @@ class LevelRepository {
       level <- getLevelFromCigarra(cigarraLevels, levelGuid)
     } yield level
 
-  def createLevel(cigarraGuid: String, levelWithoutGuid: Level): Option[String] = {
-    val level = levelWithoutGuid.copy(guid = Some(java.util.UUID.randomUUID.toString))
-
+  def createLevel(cigarraGuid: String, level: Level): Option[String] = {
     cigarrasLevels.get(UUID.fromString(cigarraGuid)) match {
       case Some(levels: ListBuffer[Level]) => levels += level
       case None                            => cigarrasLevels.put(UUID.fromString(cigarraGuid), ListBuffer(level))
     }
-    Some(level.guid.get.toString)
+    Some(level.guid)
   }
   def findFirstLevel(cigarraGuid: String): Option[Level] =
     cigarrasLevels.get(UUID.fromString(cigarraGuid)) match {
@@ -38,7 +36,7 @@ class LevelRepository {
     }
 
   private def getLevelFromCigarra(levels: ListBuffer[Level], levelGuid: String): Option[Level] =
-    levels.collectFirst { case level if level.guid.getOrElse("").equals(levelGuid) => level }
+    levels.collectFirst { case level if level.guid.equals(levelGuid) => level }
 
   private def getNextLevelFromCigarra(levels: ListBuffer[Level], levelGuid: String): Option[Level] = {
     val iterator: Iterator[Level] = levels.iterator
@@ -50,7 +48,7 @@ class LevelRepository {
   private def findLevel(iterator: Iterator[Level], guid: String): Option[Level] = {
     while (iterator.hasNext) {
       val level = iterator.next()
-      if (level.guid.getOrElse("guid-not-defined").equals(guid)) {
+      if (level.guid.equals(guid)) {
         return Some(level)
       }
     }

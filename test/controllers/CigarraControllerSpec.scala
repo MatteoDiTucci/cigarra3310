@@ -51,7 +51,7 @@ class CigarraControllerSpec extends WordSpec with MustMatchers with MockitoSugar
         "redirect to the the first level of the Cigarra" in {
           val levelService = mock[LevelService]
           when(levelService.findFirstLevel(any[String]))
-            .thenReturn(Some(Level(Some("some-level-guid"), "some-description", "some-solution")))
+            .thenReturn(Some(Level("some-level-guid", "some-description", "some-solution")))
           val controller = createController(levelService = levelService)
 
           val cigarraGuid = "some-cigarra-guid"

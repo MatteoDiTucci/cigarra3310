@@ -10,7 +10,7 @@ class LevelSpec extends WordSpec with MustMatchers {
       "the solution is correct but contains white spaces" should {
 
         "return true" in {
-          val level = Level(Some("guid"), "some-description", "some-solution")
+          val level = Level("guid", "some-description", "some-solution")
           val solutionWithInnerSpaces = "some - solution"
           val solutionWithLeadingSpaces = " some-solution"
           val solutionWithTrailingSpaces = "some-solution "
@@ -24,7 +24,7 @@ class LevelSpec extends WordSpec with MustMatchers {
       "the solution is correct but differs for the case" should {
 
         "return true" in {
-          val level = Level(Some("guid"), "some-description", "some-solution")
+          val level = Level("guid", "some-description", "some-solution")
           val solution = "some-Solution"
 
           Level.solve(level, solution) mustBe true
@@ -34,7 +34,7 @@ class LevelSpec extends WordSpec with MustMatchers {
       "the solution is correct" should {
 
         "return true" in {
-          val level = Level(Some("guid"), "some-description", "some-solution")
+          val level = Level("guid", "some-description", "some-solution")
           val solution = "some-solution"
 
           Level.solve(level, solution) mustBe true
@@ -44,7 +44,7 @@ class LevelSpec extends WordSpec with MustMatchers {
       "the solution is not correct" should {
 
         "return false" in {
-          val level = Level(Some("guid"), "some-description", "some-solution")
+          val level = Level("guid", "some-description", "some-solution")
           val solution = "bad-solution"
 
           Level.solve(level, solution) mustBe false

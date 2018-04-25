@@ -30,7 +30,7 @@ class CigarraEditorController @Inject()(cigarraService: CigarraService, levelSer
       .map { cigarra =>
         getDescriptionAndSolutionFromRequest(request).fold(BadRequest("Missing description or solution"))(
           descriptionAndSolution =>
-            createLevelWithDescriptionAndSolution(cigarra.get.guid.getOrElse("no-cigarra-guid"), descriptionAndSolution)
+            createLevelWithDescriptionAndSolution(cigarra.get.guid, descriptionAndSolution)
               .fold(InternalServerError("An error occurred"))(_ =>
                 Ok(views.html.editor(cigarra.get.name, cigarraGuid))))
       }

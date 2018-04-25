@@ -12,8 +12,10 @@ class LevelService @Inject()(levelRepository: LevelRepository) {
       isSolved = level.solution.equals(submittedSolution)
     } yield isSolved
 
-  def createLevel(cigarraGuid: String, description: String, solution: String): Option[String] =
-    levelRepository.createLevel(cigarraGuid, Level(description = description, solution = solution))
+  def createLevel(cigarraGuid: String, description: String, solution: String): Option[String] = {
+    val levelGuid = java.util.UUID.randomUUID.toString
+    levelRepository.createLevel(cigarraGuid, Level(guid = levelGuid, description = description, solution = solution))
+  }
 
   def findLevel(cigarraGuid: String, levelGuid: String): Option[Level] =
     levelRepository.findLevel(cigarraGuid, levelGuid)

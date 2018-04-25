@@ -20,7 +20,7 @@ class CigarraPublicationControllerSpec extends WordSpec with MustMatchers with M
 
       "return the url for playing to the Cigarra" in {
         val cigarraService = mock[CigarraService]
-        val cigarra = Cigarra(Some("some-cigarra-guid"), "some-cigarra-name")
+        val cigarra = Cigarra("some-cigarra-guid", "some-cigarra-name")
         when(cigarraService.findCigarra(any[String]))
           .thenReturn(Future.successful(Some(cigarra)))
         val controller = createController(cigarraService)

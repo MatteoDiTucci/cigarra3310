@@ -17,7 +17,9 @@ class LevelRepositorySpec extends WordSpec with MustMatchers {
         val cigarraGuid = UUID.fromString("24c672c2-589c-4728-a4c3-0be50a269918")
 
         val levelGuid = repository.createLevel(cigarraGuid.toString,
-                                               Level(description = "some-description", solution = "some-solution"))
+                                               Level(guid = "some-guid",
+                                                     description = "some-description",
+                                                     solution = "some-solution"))
 
         levelGuid mustBe defined
         repository.cigarrasLevels(cigarraGuid).exists { level: Level =>
@@ -32,7 +34,7 @@ class LevelRepositorySpec extends WordSpec with MustMatchers {
 
         "return the Level" in {
           val cigarraGuid = UUID.fromString("24c672c2-589c-4728-a4c3-0be50a269918")
-          val expectedLevel = Level(None, "some-description", "some-solution")
+          val expectedLevel = Level(guid = "some-guid", description = "some-description", solution = "some-solution")
           val repository = new LevelRepository()
           repository.cigarrasLevels.put(cigarraGuid, ListBuffer(expectedLevel))
 
@@ -50,7 +52,7 @@ class LevelRepositorySpec extends WordSpec with MustMatchers {
         "return the Level" in {
           val cigarraGuid = UUID.fromString("24c672c2-589c-4728-a4c3-0be50a269918")
           val levelGuid = "13b497c2-ab38-1098-b863-abc13459573a"
-          val expectedLevel = Level(Some(levelGuid), "some-description", "some-solution")
+          val expectedLevel = Level(guid = levelGuid, description = "some-description", solution = "some-solution")
           val repository = new LevelRepository()
           repository.cigarrasLevels.put(cigarraGuid, ListBuffer(expectedLevel))
 
@@ -80,8 +82,8 @@ class LevelRepositorySpec extends WordSpec with MustMatchers {
 
         "return the next Level" in {
           val cigarraGuid = UUID.fromString("24c672c2-589c-4728-a4c3-0be50a269918")
-          val currentLevel = Level(Some("some-guid"), "some-description", "some-solution")
-          val nextLevel = Level(Some("next-level-guid"), "next-level-description", "next-level-solution")
+          val currentLevel = Level("some-guid", "some-description", "some-solution")
+          val nextLevel = Level("next-level-guid", "next-level-description", "next-level-solution")
           val repository = new LevelRepository()
           repository.cigarrasLevels.put(cigarraGuid, ListBuffer(currentLevel, nextLevel))
 
@@ -95,7 +97,7 @@ class LevelRepositorySpec extends WordSpec with MustMatchers {
 
         "return None" in {
           val cigarraGuid = UUID.fromString("24c672c2-589c-4728-a4c3-0be50a269918")
-          val level = Level(Some("some-guid"), "some-description", "some-solution")
+          val level = Level("some-guid", "some-description", "some-solution")
           val repository = new LevelRepository()
           repository.cigarrasLevels.put(cigarraGuid, ListBuffer(level))
 
@@ -110,7 +112,7 @@ class LevelRepositorySpec extends WordSpec with MustMatchers {
 
         "return None" in {
           val cigarraGuid = UUID.fromString("24c672c2-589c-4728-a4c3-0be50a269918")
-          val currentLevel = Level(Some("some-guid"), "some-description", "some-solution")
+          val currentLevel = Level("some-guid", "some-description", "some-solution")
           val repository = new LevelRepository()
           repository.cigarrasLevels.put(cigarraGuid, ListBuffer(currentLevel))
 

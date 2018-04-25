@@ -1,6 +1,6 @@
 package domain
 
-case class Level(guid: Option[String] = None, description: String, solution: String)
+case class Level(guid: String, description: String, solution: String)
 
 object Level {
   def solve(level: Level, solution: String): Boolean = {

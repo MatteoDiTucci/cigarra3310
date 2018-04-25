@@ -35,7 +35,7 @@ class CigarraServiceSpec extends WordSpec with MustMatchers with MockitoSugar {
       "the Cigarra exists" should {
 
         "return the Cigarra" in {
-          val cigarra = Cigarra(Some("some-guid"), "some-name")
+          val cigarra = Cigarra("some-guid", "some-name")
           val cigarraRepository = mock[CigarraRepository]
           when(cigarraRepository.findCigarra(any[String])).thenReturn(Future.successful(Some(cigarra)))
           val service = new CigarraService(cigarraRepository)

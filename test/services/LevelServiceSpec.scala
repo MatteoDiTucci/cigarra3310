@@ -45,7 +45,7 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
       "the level exists" should {
 
         "return the Level" in {
-          val expectedLevel = Level(Some("level-guid"), "description", "solution")
+          val expectedLevel = Level("level-guid", "description", "solution")
           val levelRepository = mock[LevelRepository]
           when(levelRepository.findFirstLevel(any[String]))
             .thenReturn(Some(expectedLevel))
@@ -75,12 +75,12 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
     "receiving a solution for a Level" when {
       val levelRepository = mock[LevelRepository]
       when(levelRepository.findLevel(any[String], any[String]))
-        .thenReturn(Some(Level(Some("current-level-guid"), "some-description", "current-level-solution")))
+        .thenReturn(Some(Level("current-level-guid", "some-description", "current-level-solution")))
 
       "the solution is correct" should {
 
         "return true" in {
-          val level = Level(Some("some-guid"), "some-description", "some-solution")
+          val level = Level("some-guid", "some-description", "some-solution")
           when(levelRepository.findLevel(any[String], any[String]))
             .thenReturn(Some(level))
 
@@ -95,7 +95,7 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
       "the solution is not correct" should {
 
         "return false" in {
-          val level = Level(Some("some-guid"), "some-description", "some-solution")
+          val level = Level("some-guid", "some-description", "some-solution")
           when(levelRepository.findLevel(any[String], any[String]))
             .thenReturn(Some(level))
 
@@ -128,7 +128,7 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
 
         "return the Level" in {
           val levelRepository = mock[LevelRepository]
-          val level = Level(Some("some-level-guid"), "some-level-description", "some-level-solution")
+          val level = Level("some-level-guid", "some-level-description", "some-level-solution")
           when(levelRepository.findLevel(any[String], any[String]))
             .thenReturn(Some(level))
 
@@ -162,7 +162,7 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
 
         "return the next Level" in {
           val levelRepository = mock[LevelRepository]
-          val level = Level(Some("next-level-guid"), "next-level-description", "next-level-solution")
+          val level = Level("next-level-guid", "next-level-description", "next-level-solution")
           when(levelRepository.findNextLevel(any[String], any[String]))
             .thenReturn(Some(level))
 

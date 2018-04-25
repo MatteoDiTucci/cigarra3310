@@ -49,7 +49,7 @@ class CigarraRepository @Inject()(db: Database)(
     str("guid") ~
       str("name") map {
       case guid ~ name =>
-        Cigarra(Option(guid), name)
+        Cigarra(guid, name)
     }
 
 }
