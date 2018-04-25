@@ -22,7 +22,8 @@ class LevelRepository {
       level <- getLevelFromCigarra(cigarraLevels, levelGuid)
     } yield level
 
-  def createLevel(cigarraGuid: String, level: Level): Option[String] = {
+  def createLevel(cigarraGuid: String, description: String, solution: String, levelGuid: String): Option[String] = {
+    val level = Level(levelGuid, description, solution)
     cigarrasLevels.get(UUID.fromString(cigarraGuid)) match {
       case Some(levels: ListBuffer[Level]) => levels += level
       case None                            => cigarrasLevels.put(UUID.fromString(cigarraGuid), ListBuffer(level))

@@ -14,15 +14,13 @@ class LevelRepositorySpec extends WordSpec with MustMatchers {
 
       "persist the level and return its guid" in {
         val repository = new LevelRepository()
-        val cigarraGuid = UUID.fromString("24c672c2-589c-4728-a4c3-0be50a269918")
-
-        val levelGuid = repository.createLevel(cigarraGuid.toString,
-                                               Level(guid = "some-guid",
-                                                     description = "some-description",
-                                                     solution = "some-solution"))
+        val levelGuid = repository.createLevel(cigarraGuid = "24c672c2-589c-4728-a4c3-0be50a269918",
+                                               description = "some-description",
+                                               solution = "some-solution",
+                                               levelGuid = "some-guid")
 
         levelGuid mustBe defined
-        repository.cigarrasLevels(cigarraGuid).exists { level: Level =>
+        repository.cigarrasLevels(UUID.fromString("24c672c2-589c-4728-a4c3-0be50a269918")).exists { level: Level =>
           level.guid.toString.equals(levelGuid.get)
         }
       }

@@ -17,7 +17,8 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
         "return its guid" in {
           val expectedGuid = "some-guid"
           val levelRepository = mock[LevelRepository]
-          when(levelRepository.createLevel(any[String], any[Level])).thenReturn(Some(expectedGuid))
+          when(levelRepository.createLevel(any[String], any[String], any[String], any[String]))
+            .thenReturn(Some(expectedGuid))
           val service = new LevelService(levelRepository)
 
           val guid = service.createLevel("some-cigarra-guid", "some-description", "some-solution")
@@ -30,7 +31,7 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
 
         "return a None" in {
           val levelRepository = mock[LevelRepository]
-          when(levelRepository.createLevel(any[String], any[Level])).thenReturn(None)
+          when(levelRepository.createLevel(any[String], any[String], any[String], any[String])).thenReturn(None)
           val service = new LevelService(levelRepository)
 
           val guid = service.createLevel("some-cigarra-guid", "some-description", "some-solution")
