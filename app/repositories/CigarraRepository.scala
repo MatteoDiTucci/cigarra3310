@@ -29,7 +29,7 @@ class CigarraRepository @Inject()(db: Database)(
       }
     }
 
-  def findCigarra(guid: String): Future[Option[Cigarra]] = Future {
+  def findCigarra(guid: String): Future[Cigarra] = Future {
     db.withConnection { implicit connection =>
       SQL(
         """
@@ -40,7 +40,7 @@ class CigarraRepository @Inject()(db: Database)(
       ).on(
           'guid -> guid
         )
-        .as(cigarras.singleOpt)
+        .as(cigarras.single)
     }
   }
 

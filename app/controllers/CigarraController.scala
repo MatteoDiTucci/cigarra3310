@@ -39,9 +39,12 @@ class CigarraController @Inject()(cigarraService: CigarraService, levelService: 
       case Success(values) => Some(values.head)
     }
 
-  def findFirstLevel(cigarraGuid: String) = Action {
-    val firstLevel = Await.result(cigarraService.findFirstLevel(cigarraGuid), 1.second)
-    firstLevel.fold(BadRequest("Cigarra not found"))(level => SeeOther(s"/cigarra/$cigarraGuid/level/${level.guid}"))
+  def findFirstLevel(cigarraGuid: String): Action[AnyContent] = Action.async {
+    cigarraService.findFirstLevel(cigarraGuid).map { maybeFirstLevel =>
+      maybeFirstLevel.fold(BadRequest("Cigarra not found"))(level =>
+        SeeOther(s"/cigarra/$cigarraGuid/level/${level.guid}"))
+    }
+
   }
 
 }

@@ -18,7 +18,7 @@ class CigarraEditorController @Inject()(cigarraService: CigarraService, levelSer
   def index(cigarraGuid: String): Action[AnyContent] = Action.async {
     cigarraService
       .findCigarra(cigarraGuid)
-      .map(someCigarra => Ok(views.html.editor(someCigarra.get.name, cigarraGuid)))
+      .map(someCigarra => Ok(views.html.editor(someCigarra.name, cigarraGuid)))
       .recoverWith {
         case _: Throwable => Future.successful(InternalServerError)
       }
@@ -29,10 +29,10 @@ class CigarraEditorController @Inject()(cigarraService: CigarraService, levelSer
       .map { cigarra =>
         getDescriptionAndSolutionFromRequest(request).fold(BadRequest("Missing description or solution"))(
           descriptionAndSolution => {
-            createLevelWithDescriptionAndSolution(cigarra.get.guid, descriptionAndSolution).map { levelGuid =>
-              cigarraService.setFirstLevel(cigarra.get.guid, levelGuid)
+            createLevelWithDescriptionAndSolution(cigarra.guid, descriptionAndSolution).map { levelGuid =>
+              cigarraService.setFirstLevel(cigarra.guid, levelGuid)
             }
-            Ok(views.html.editor(cigarra.get.name, cigarraGuid))
+            Ok(views.html.editor(cigarra.name, cigarraGuid))
           })
       }
       .recoverWith {

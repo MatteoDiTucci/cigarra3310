@@ -32,7 +32,7 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
 
           Await.result(repository.save(level.guid, level.description, level.solution, "some-cigarra-guid"), 1.second)
 
-          Await.result(repository.find("some-guid"), 1.second) mustBe defined
+          Await.result(repository.find("some-guid"), 1.second) mustEqual level
         }
       }
     }
@@ -130,34 +130,19 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
       }
     }
 
-    "receiving a Level guid to retrieve a Level" when {
+    "receiving a Level guid to retrieve a Level" should {
 
-      "the Level exist" should {
+      "return the Level" in {
+        DbFixtures.withMyDatabase { database =>
+          val level = Level(guid = "some-guid", description = "some-description", solution = "some-solution")
+          val repository = new LevelRepository(database)
+          Await.result(repository.save(levelGuid = level.guid,
+                                       description = level.description,
+                                       solution = level.solution,
+                                       cigarraGuid = "some-cigarra-guid"),
+                       1.second)
 
-        "return the Level" in {
-          DbFixtures.withMyDatabase { database =>
-            val level = Level(guid = "some-guid", description = "some-description", solution = "some-solution")
-            val repository = new LevelRepository(database)
-            Await.result(repository.save(levelGuid = level.guid,
-                                         description = level.description,
-                                         solution = level.solution,
-                                         cigarraGuid = "some-cigarra-guid"),
-                         1.second)
-
-            Await.result(repository.find(level.guid), 1.second) mustBe Some(level)
-          }
-        }
-      }
-
-      "the Level does not exist" should {
-
-        "return None" in {
-          DbFixtures.withMyDatabase { database =>
-            val level = Level(guid = "some-guid", description = "some-description", solution = "some-solution")
-            val repository = new LevelRepository(database)
-
-            Await.result(repository.find(level.guid), 1.second) mustBe None
-          }
+          Await.result(repository.find(level.guid), 1.second) mustBe level
         }
       }
     }

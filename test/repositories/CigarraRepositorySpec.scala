@@ -23,11 +23,12 @@ class CigarraRepositorySpec extends WordSpec with MustMatchers with BeforeAndAft
 
     "persist the Cigarra" in {
       DbFixtures.withMyDatabase { database =>
+        val cigarra = Cigarra("some-guid", "some-name")
         val cigarraRepository = new CigarraRepository(database)
 
         Await.result(cigarraRepository.save("some-guid", "some-name"), 1.second)
 
-        Await.result(cigarraRepository.findCigarra("some-guid"), 1.second) mustBe defined
+        Await.result(cigarraRepository.findCigarra("some-guid"), 1.second) mustEqual cigarra
       }
     }
 
@@ -41,20 +42,7 @@ class CigarraRepositorySpec extends WordSpec with MustMatchers with BeforeAndAft
             val cigarraRepository = new CigarraRepository(database)
             Await.result(cigarraRepository.save(cigarra.guid, cigarra.name), 1.second)
 
-            Await.result(cigarraRepository.findCigarra("some-guid"), 1.second) mustBe Some(cigarra)
-          }
-        }
-      }
-
-      "the Cigarra cannot be found" should {
-
-        "return None" in {
-          DbFixtures.withMyDatabase { database =>
-            val cigarraRepository = new CigarraRepository(database)
-
-            val cigarra = Await.result(cigarraRepository.findCigarra("some-guid"), 1.second)
-
-            cigarra mustBe None
+            Await.result(cigarraRepository.findCigarra("some-guid"), 1.second) mustBe cigarra
           }
         }
       }

@@ -39,18 +39,13 @@ class LevelController @Inject()(cigarraService: CigarraService, levelService: Le
   private def isSolutionCorrect(cigarraGuid: String, levelGuid: String, solution: String) =
     levelService.solveLevel(cigarraGuid, levelGuid, solution)
 
-  def level(cigarraGuid: String, levelGuid: String) = Action {
-    val maybeCigarra = Await.result(cigarraService.findCigarra(cigarraGuid), 1.second)
-    val maybeLevel = Await.result(levelService.findLevel(levelGuid), 1.second)
+  def level(cigarraGuid: String, levelGuid: String): Action[AnyContent] = Action.async {
+    for {
+      cigarra <- cigarraService.findCigarra(cigarraGuid)
+      level <- levelService.findLevel(levelGuid)
+      result <- Future.successful(Ok(views.html.level(cigarraGuid, cigarra.name, levelGuid, level.description)))
+    } yield result
 
-    (for {
-      cigarraName <- maybeCigarra.map(_.name)
-      levelDescription <- maybeLevel.map(_.description)
-    } yield (cigarraName, levelDescription)) match {
-      case None => BadRequest("Cigarra or level not found")
-      case Some((cigarraName, levelDescription)) =>
-        Ok(views.html.level(cigarraGuid, cigarraName, levelGuid, levelDescription))
-    }
   }
 
   private def getSolutionFromBody(request: Request[AnyContent]) =

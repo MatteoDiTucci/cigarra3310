@@ -64,14 +64,14 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
     "receiving a solution for a Level" when {
       val levelRepository = mock[LevelRepository]
       when(levelRepository.find("current-level-guid"))
-        .thenReturn(Future.successful(Some(Level("current-level-guid", "some-description", "current-level-solution"))))
+        .thenReturn(Future.successful(Level("current-level-guid", "some-description", "current-level-solution")))
 
       "the solution is correct" when {
 
         "the solution submitted is identical to the one stored" should {
           val level = Level("current-level-guid", "some-description", "some-solution")
           when(levelRepository.find("current-level-guid"))
-            .thenReturn(Future.successful(Some(level)))
+            .thenReturn(Future.successful(level))
 
           "return true" in {
             val service = new LevelService(levelRepository, uuidGenerator)
@@ -83,7 +83,7 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
         "the solution submitted contains white spaces" should {
           val level = Level("current-level-guid", "some-description", "some-solution")
           when(levelRepository.find("current-level-guid"))
-            .thenReturn(Future.successful(Some(level)))
+            .thenReturn(Future.successful(level))
 
           "return true" in {
             val solutionWithInnerSpaces = "some - solution"
@@ -100,7 +100,7 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
         "the solution submitted differs for the case" should {
           val level = Level("current-level-guid", "some-description", "some-solution")
           when(levelRepository.find("current-level-guid"))
-            .thenReturn(Future.successful(Some(level)))
+            .thenReturn(Future.successful(level))
 
           "return true" in {
             val service = new LevelService(levelRepository, uuidGenerator)
@@ -115,21 +115,7 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
         "return false" in {
           val level = Level("current-level-guid", "some-description", "some-solution")
           when(levelRepository.find("current-level-guid"))
-            .thenReturn(Future.successful(Some(level)))
-
-          val service = new LevelService(levelRepository, uuidGenerator)
-
-          val result = Await.result(service.solveLevel("cigarra-guid", "current-level-guid", "bad-solution"), 1.second)
-
-          result mustBe false
-        }
-      }
-
-      "the Level cannot be found" should {
-
-        "return false" in {
-          when(levelRepository.find("current-level-guid"))
-            .thenReturn(Future.successful(None))
+            .thenReturn(Future.successful(level))
 
           val service = new LevelService(levelRepository, uuidGenerator)
 
@@ -148,28 +134,11 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
           val levelRepository = mock[LevelRepository]
           val level = Level("some-level-guid", "some-level-description", "some-level-solution")
           when(levelRepository.find("current-level-guid"))
-            .thenReturn(Future.successful(Some(level)))
+            .thenReturn(Future.successful(level))
 
           val service = new LevelService(levelRepository, uuidGenerator)
 
-          val result = Await.result(service.findLevel("current-level-guid"), 1.second)
-
-          result mustBe Some(level)
-        }
-      }
-
-      "the Level does not exist" should {
-
-        "return None" in {
-          val levelRepository = mock[LevelRepository]
-          when(levelRepository.find("current-level-guid"))
-            .thenReturn(Future.successful(None))
-
-          val service = new LevelService(levelRepository, uuidGenerator)
-
-          val result = Await.result(service.findLevel("current-level-guid"), 1.second)
-
-          result mustBe None
+          Await.result(service.findLevel("current-level-guid"), 1.second) mustBe level
         }
       }
     }

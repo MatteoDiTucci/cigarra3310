@@ -38,25 +38,10 @@ class CigarraServiceSpec extends WordSpec with MustMatchers with MockitoSugar {
         "return the Cigarra" in {
           val cigarra = Cigarra("some-guid", "some-name")
           val cigarraRepository = mock[CigarraRepository]
-          when(cigarraRepository.findCigarra(any[String])).thenReturn(Future.successful(Some(cigarra)))
+          when(cigarraRepository.findCigarra(any[String])).thenReturn(Future.successful(cigarra))
           val service = createService(cigarraRepository)
 
-          val result = Await.result(service.findCigarra("some-guid"), 1.second)
-
-          result mustBe Some(cigarra)
-        }
-      }
-
-      "CigarraRepository is not able to find a Cigarra" should {
-
-        "return a None" in {
-          val cigarraRepository = mock[CigarraRepository]
-          when(cigarraRepository.findCigarra(any[String])).thenReturn(Future.successful(None))
-          val service = createService(cigarraRepository)
-
-          val result = Await.result(service.findCigarra("some-guid"), 1.second)
-
-          result mustBe None
+          Await.result(service.findCigarra("some-guid"), 1.second) mustBe cigarra
         }
       }
     }
@@ -68,7 +53,7 @@ class CigarraServiceSpec extends WordSpec with MustMatchers with MockitoSugar {
 
         val level = Level("some-level-guid", "some-description", "some-solution")
         val levelRepository = mock[LevelRepository]
-        when(levelRepository.find("some-level-guid")).thenReturn(Future.successful(Some(level)))
+        when(levelRepository.find("some-level-guid")).thenReturn(Future.successful(level))
         val service = createService(cigarraRepository, levelRepository)
 
         Await.result(service.findFirstLevel("some-guid"), 1.second) mustBe Some(level)

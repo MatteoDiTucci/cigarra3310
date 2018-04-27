@@ -15,7 +15,7 @@ class CigarraPublicationController @Inject()(cigarraService: CigarraService, pla
   def index(cigarraGuid: String): Action[AnyContent] = Action.async {
     cigarraService
       .findCigarra(cigarraGuid)
-      .map(someCigarra => Ok(views.html.publication(someCigarra.get.name, s"/cigarra/$cigarraGuid")))
+      .map(cigarra => Ok(views.html.publication(cigarra.name, s"/cigarra/$cigarraGuid")))
       .recoverWith {
         case _: Throwable => Future.successful(InternalServerError("Cigarra not found"))
       }

@@ -13,8 +13,8 @@ class LevelService @Inject()(levelRepository: LevelRepository, uuidGenerator: Uu
   def solveLevel(cigarraGuid: String, currentLevelGuid: String, submittedSolution: String): Future[Boolean] =
     levelRepository
       .find(currentLevelGuid)
-      .map { maybeLevel =>
-        maybeLevel.fold(false)(level => solve(level, submittedSolution))
+      .map { level =>
+        solve(level, submittedSolution)
       }
 
   private def solve(level: Level, solution: String): Boolean = {
@@ -40,7 +40,7 @@ class LevelService @Inject()(levelRepository: LevelRepository, uuidGenerator: Uu
         levelGuid
       }
 
-  def findLevel(levelGuid: String): Future[Option[Level]] = levelRepository.find(levelGuid)
+  def findLevel(levelGuid: String): Future[Level] = levelRepository.find(levelGuid)
 
   def findNextLevel(levelGuid: String): Future[Option[Level]] = levelRepository.findNext(levelGuid)
 }

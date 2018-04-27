@@ -24,11 +24,11 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
       "return the play Level page" in {
         val cigarra = Cigarra("some-cigarra-guid", "some-cigarra-name")
         val cigarraService = mock[CigarraService]
-        when(cigarraService.findCigarra(cigarra.guid)).thenReturn(Future.successful(Some(cigarra)))
+        when(cigarraService.findCigarra(cigarra.guid)).thenReturn(Future.successful(cigarra))
 
         val level = Level("some-level-guid", "some-cigarra-name", "some-solution")
         val levelService = mock[LevelService]
-        when(levelService.findLevel(level.guid)).thenReturn(Future.successful(Some(level)))
+        when(levelService.findLevel(level.guid)).thenReturn(Future.successful(level))
 
         val controller = new LevelController(cigarraService, levelService)(Helpers.stubControllerComponents())
 
@@ -41,7 +41,7 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
     "receiving a POST request to submit the solution of a Cigarra Level" when {
       val cigarra = Cigarra("some-cigarra-guid", "some-cigarra-name")
       val cigarraService = mock[CigarraService]
-      when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(Some(cigarra)))
+      when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(cigarra))
 
       "the solution is correct and the current level is not the final one" should {
 

@@ -26,26 +26,13 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
           val cigarraGuid = "some-cigarra-guid"
           val cigarraService = mock[CigarraService]
           when(cigarraService.findCigarra(any[String]))
-            .thenReturn(Future.successful(Some(Cigarra(guid = "some-guid", name = cigarraName))))
+            .thenReturn(Future.successful(Cigarra(guid = "some-guid", name = cigarraName)))
           val controller = createController(cigarraService = cigarraService)
 
           val result = controller.index(cigarraGuid)(FakeRequest())
 
           contentAsString(result) must include(cigarraName)
           contentAsString(result) must include(cigarraGuid)
-        }
-      }
-
-      "the Cigarra does not exists" should {
-
-        "return an Internal Error" in {
-          val cigarraService = mock[CigarraService]
-          when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(None))
-          val controller = createController(cigarraService = cigarraService)
-
-          val result = controller.index("some-cigarra-guid")(FakeRequest())
-
-          status(result) mustBe INTERNAL_SERVER_ERROR
         }
       }
     }
@@ -66,7 +53,7 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
           val cigarraName = "some-name"
           val cigarraService = mock[CigarraService]
           val cigarra = Cigarra(guid = "some-guid", name = cigarraName)
-          when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(Some(cigarra)))
+          when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(cigarra))
 
           val controller = createController(cigarraService, levelService)
 
@@ -81,20 +68,6 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
           }
         }
       }
-
-      "the Cigarra does not exist" should {
-
-        "return a Bad Request" in {
-          val cigarraService = mock[CigarraService]
-          when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(None))
-          val controller = createController(cigarraService)
-
-          val result = controller.createLevel("bad-cigarra-guid")(request)
-
-          status(result) mustBe BAD_REQUEST
-        }
-
-      }
     }
 
     "receiving a POST without level description" should {
@@ -104,7 +77,7 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
       "return a BadRequest" in {
         val cigarra = Cigarra(guid = "some-guid", name = "some-cigarra-name")
         val cigarraService = mock[CigarraService]
-        when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(Some(cigarra)))
+        when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(cigarra))
 
         val controller = createController(cigarraService)
 
@@ -122,7 +95,7 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
       "return a BadRequest" in {
         val cigarraService = mock[CigarraService]
         val cigarra = Cigarra(guid = "some-guid", name = "some-cigarra-name")
-        when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(Some(cigarra)))
+        when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(cigarra))
 
         val controller = createController(cigarraService)
 

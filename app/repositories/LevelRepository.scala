@@ -55,7 +55,7 @@ class LevelRepository @Inject()(db: Database)(
       }
     }
 
-  def find(levelGuid: String): Future[Option[Level]] =
+  def find(levelGuid: String): Future[Level] =
     Future {
       db.withConnection { implicit connection =>
         SQL(
@@ -67,7 +67,7 @@ class LevelRepository @Inject()(db: Database)(
         ).on(
             'guid -> levelGuid
           )
-          .as(level.singleOpt)
+          .as(level.single)
       }
     }
 
