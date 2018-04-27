@@ -10,6 +10,9 @@ import services.{CigarraService, LevelService}
 import org.mockito.Mockito._
 import org.mockito.ArgumentMatchers.any
 
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class CigarraControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
   "CigarraController" when {
 
@@ -49,10 +52,10 @@ class CigarraControllerSpec extends WordSpec with MustMatchers with MockitoSugar
       "the Cigarra exists" should {
 
         "redirect to the the first level of the Cigarra" in {
-          val levelService = mock[LevelService]
-          when(levelService.findFirstLevel(any[String]))
-            .thenReturn(Some(Level("some-level-guid", "some-description", "some-solution")))
-          val controller = createController(levelService = levelService)
+          val cigarraService = mock[CigarraService]
+          when(cigarraService.findFirstLevel(any[String]))
+            .thenReturn(Future.successful(Some(Level("some-level-guid", "some-description", "some-solution"))))
+          val controller = createController(cigarraService = cigarraService)
 
           val cigarraGuid = "some-cigarra-guid"
           val request = FakeRequest("GET", s"/cigarra/$cigarraGuid")
@@ -65,10 +68,10 @@ class CigarraControllerSpec extends WordSpec with MustMatchers with MockitoSugar
       "the Cigarra does not exist" should {
 
         "return a Bad Request" in {
-          val levelService = mock[LevelService]
-          when(levelService.findFirstLevel(any[String]))
-            .thenReturn(None)
-          val controller = createController(levelService = levelService)
+          val cigarraService = mock[CigarraService]
+          when(cigarraService.findFirstLevel(any[String]))
+            .thenReturn(Future.successful(None))
+          val controller = createController(cigarraService = cigarraService)
 
           val cigarraGuid = "some-cigarra-guid"
           val request = FakeRequest("GET", s"/cigarra/$cigarraGuid")

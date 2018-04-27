@@ -60,7 +60,8 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
 
         "create a new level and return the Editor Page" in {
           val levelService = mock[LevelService]
-          when(levelService.createLevel(any[String], any[String], any[String])).thenReturn(Some("some-level-guid"))
+          when(levelService.createLevel(any[String], any[String], any[String]))
+            .thenReturn(Future.successful("level-guid"))
 
           val cigarraName = "some-name"
           val cigarraService = mock[CigarraService]
@@ -128,27 +129,6 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
         val result = controller.createLevel("some-cigarra-guid")(request)
 
         status(result) mustBe BAD_REQUEST
-      }
-    }
-
-    "the Level cannot be created" should {
-
-      "return an Internal Server error" in {
-        val request =
-          FakeRequest("POST", s"/cigarra/some-cigarra-guid/level")
-            .withFormUrlEncodedBody("description" -> "some-description", "solution" -> "some-solution")
-
-        val cigarraService = mock[CigarraService]
-        val cigarra = Cigarra(guid = "some-guid", name = "some-cigarra-name")
-        when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(Some(cigarra)))
-        val levelService = mock[LevelService]
-        when(levelService.createLevel(any[String], any[String], any[String])).thenReturn(None)
-
-        val controller = createController(cigarraService, levelService)
-
-        val result = controller.createLevel("some-cigarra-guid")(request)
-
-        status(result) mustBe INTERNAL_SERVER_ERROR
       }
     }
   }

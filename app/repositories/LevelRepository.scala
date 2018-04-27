@@ -1,58 +1,123 @@
 package repositories
 
-import java.util.UUID
-
+import anorm.SqlParser.str
+import anorm.{~, RowParser, SQL, SqlParser}
 import domain.Level
+import javax.inject.{Inject, Named, Singleton}
+import play.api.db.Database
 
-import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
+import scala.concurrent.{ExecutionContext, Future}
 
-class LevelRepository {
-  val cigarrasLevels: mutable.Map[UUID, ListBuffer[Level]] = mutable.Map()
+@Singleton
+class LevelRepository @Inject()(db: Database)(
+    @Named("database-execution-context") private implicit val ec: ExecutionContext) {
 
-  def findNextLevel(cigarraGuid: String, levelGuid: String): Option[Level] =
-    for {
-      cigarraLevels <- cigarrasLevels.get(UUID.fromString(cigarraGuid))
-      level <- getNextLevelFromCigarra(cigarraLevels, levelGuid)
-    } yield level
-
-  def findLevel(cigarraGuid: String, levelGuid: String): Option[Level] =
-    for {
-      cigarraLevels <- cigarrasLevels.get(UUID.fromString(cigarraGuid))
-      level <- getLevelFromCigarra(cigarraLevels, levelGuid)
-    } yield level
-
-  def createLevel(cigarraGuid: String, description: String, solution: String, levelGuid: String): Option[String] = {
-    val level = Level(levelGuid, description, solution)
-    cigarrasLevels.get(UUID.fromString(cigarraGuid)) match {
-      case Some(levels: ListBuffer[Level]) => levels += level
-      case None                            => cigarrasLevels.put(UUID.fromString(cigarraGuid), ListBuffer(level))
-    }
-    Some(level.guid)
-  }
-  def findFirstLevel(cigarraGuid: String): Option[Level] =
-    cigarrasLevels.get(UUID.fromString(cigarraGuid)) match {
-      case Some(levels) => Some(levels.head)
-      case None         => None
+  val level: RowParser[Level] =
+    str("guid") ~
+      str("description") ~
+      str("solution") map {
+      case guid ~ description ~ solution =>
+        Level(guid, description, solution)
     }
 
-  private def getLevelFromCigarra(levels: ListBuffer[Level], levelGuid: String): Option[Level] =
-    levels.collectFirst { case level if level.guid.equals(levelGuid) => level }
-
-  private def getNextLevelFromCigarra(levels: ListBuffer[Level], levelGuid: String): Option[Level] = {
-    val iterator: Iterator[Level] = levels.iterator
-    val maybeFoundLevel = findLevel(iterator, levelGuid)
-
-    maybeFoundLevel.flatMap(_ => if (iterator.hasNext) Some(iterator.next()) else None)
-  }
-
-  private def findLevel(iterator: Iterator[Level], guid: String): Option[Level] = {
-    while (iterator.hasNext) {
-      val level = iterator.next()
-      if (level.guid.equals(guid)) {
-        return Some(level)
+  def findNext(guid: String): Future[Option[Level]] =
+    Future {
+      db.withConnection { implicit connection =>
+        SQL(
+          """
+          SELECT guid, description, solution
+          FROM level
+          WHERE guid = (
+                       SELECT next_level_guid
+                       FROM level
+                       WHERE guid = {guid});
+        """
+        ).on(
+            'guid -> guid
+          )
+          .as(level.singleOpt)
       }
     }
-    None
+
+  def findLastCreatedLevelGuid(cigarraGuid: String): Future[Option[String]] =
+    Future {
+      db.withConnection { implicit connection =>
+        SQL(
+          """
+          SELECT guid
+          FROM level
+          WHERE cigarra_guid = {cigarraGuid} AND next_level_guid is NULL;
+        """
+        ).on(
+            'cigarraGuid -> cigarraGuid
+          )
+          .as(SqlParser.scalar[String].singleOpt)
+      }
+    }
+
+  def find(levelGuid: String): Future[Option[Level]] =
+    Future {
+      db.withConnection { implicit connection =>
+        SQL(
+          """
+          SELECT guid, description, solution
+          FROM level
+          WHERE guid = {guid};
+        """
+        ).on(
+            'guid -> levelGuid
+          )
+          .as(level.singleOpt)
+      }
+    }
+
+  def save(levelGuid: String, description: String, solution: String, cigarraGuid: String): Future[Boolean] =
+    Future {
+      db.withConnection { implicit connection =>
+        SQL(
+          """
+                INSERT INTO level (guid, next_level_guid ,cigarra_guid, description, solution)
+                VALUES ({guid}, NULL, {cigarraGuid}, {description}, {solution});
+          """
+        ).on(
+            'guid -> levelGuid,
+            'cigarraGuid -> cigarraGuid,
+            'description -> description,
+            'solution -> solution
+          )
+          .execute()
+      }
+    }
+
+  def linkToPreviousLevel(levelGuid: String, previousLevelGuid: String): Future[Boolean] =
+    Future {
+      db.withConnection { implicit connection =>
+        SQL(
+          """
+                UPDATE level 
+                SET next_level_guid = {levelGuid}
+                WHERE guid = {previousLevelGuid};
+          """
+        ).on(
+            'levelGuid -> levelGuid,
+            'previousLevelGuid -> previousLevelGuid
+          )
+          .execute()
+      }
+    }
+
+  def amountOfLevel(cigarraGuid: String): Future[Int] = Future {
+    db.withConnection { implicit connection =>
+      SQL(
+        """
+          SELECT count(1)
+          FROM level
+          WHERE cigarra_guid = {cigarraGuid};
+        """
+      ).on(
+          'cigarraGuid -> cigarraGuid
+        )
+        .as(SqlParser.scalar[Int].single)
+    }
   }
 }

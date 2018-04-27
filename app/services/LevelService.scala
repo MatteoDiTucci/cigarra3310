@@ -4,25 +4,43 @@ import domain.Level
 import javax.inject.{Inject, Singleton}
 import repositories.LevelRepository
 
+import scala.concurrent.{ExecutionContext, Future}
+
 @Singleton
-class LevelService @Inject()(levelRepository: LevelRepository) {
-  def solveLevel(cigarraGuid: String, currentLevelGuid: String, submittedSolution: String): Option[Boolean] =
-    for {
-      level <- levelRepository.findLevel(cigarraGuid, currentLevelGuid)
-      isSolved = level.solution.equals(submittedSolution)
-    } yield isSolved
+class LevelService @Inject()(levelRepository: LevelRepository, uuidGenerator: UuidGenerator)(
+    implicit ex: ExecutionContext) {
 
-  def createLevel(cigarraGuid: String, description: String, solution: String): Option[String] =
-    levelRepository.createLevel(cigarraGuid = cigarraGuid,
-                                description = description,
-                                solution = solution,
-                                levelGuid = java.util.UUID.randomUUID.toString)
+  def solveLevel(cigarraGuid: String, currentLevelGuid: String, submittedSolution: String): Future[Boolean] =
+    levelRepository
+      .find(currentLevelGuid)
+      .map { maybeLevel =>
+        maybeLevel.fold(false)(level => solve(level, submittedSolution))
+      }
 
-  def findLevel(cigarraGuid: String, levelGuid: String): Option[Level] =
-    levelRepository.findLevel(cigarraGuid, levelGuid)
+  private def solve(level: Level, solution: String): Boolean = {
+    val sanitizedSolution = solution.toLowerCase.replaceAll("\\s", "")
+    val sanitizedLevelSolution = level.solution.toLowerCase.replaceAll("\\s", "")
+    sanitizedLevelSolution.equals(sanitizedSolution)
+  }
 
-  def findFirstLevel(cigarraGuid: String): Option[Level] = levelRepository.findFirstLevel(cigarraGuid)
+  def createLevel(cigarraGuid: String, description: String, solution: String): Future[String] = {
+    val currentLevelGuid = uuidGenerator.guid
+    levelRepository.findLastCreatedLevelGuid(cigarraGuid).flatMap {
+      case Some(previousLevelGuid) =>
+        levelRepository.linkToPreviousLevel(currentLevelGuid, previousLevelGuid)
+        saveLevel(cigarraGuid, description, solution, currentLevelGuid)
+      case None => saveLevel(cigarraGuid, description, solution, currentLevelGuid)
+    }
+  }
 
-  def findNextLevel(cigarraGuid: String, levelGuid: String): Option[Level] =
-    levelRepository.findNextLevel(cigarraGuid, levelGuid)
+  private def saveLevel(cigarraGuid: String, description: String, solution: String, levelGuid: String) =
+    levelRepository
+      .save(levelGuid = levelGuid, description = description, solution = solution, cigarraGuid = cigarraGuid)
+      .map { _ =>
+        levelGuid
+      }
+
+  def findLevel(levelGuid: String): Future[Option[Level]] = levelRepository.find(levelGuid)
+
+  def findNextLevel(levelGuid: String): Future[Option[Level]] = levelRepository.findNext(levelGuid)
 }

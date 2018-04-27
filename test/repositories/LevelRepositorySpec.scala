@@ -1,125 +1,250 @@
 package repositories
 
-import java.util.UUID
-
+import anorm.SQL
 import domain.Level
-import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, MustMatchers, WordSpec}
+import play.api.db.Database
 
-import scala.collection.mutable.ListBuffer
+import scala.concurrent.{Await, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
-class LevelRepositorySpec extends WordSpec with MustMatchers {
+class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfterEach {
+
+  override def beforeEach(): Unit = DbFixtures.withMyDatabase { database =>
+    Await.result(deleteLevel(database, "some-guid"), 1.second)
+    Await.result(deleteLevel(database, "another-guid"), 1.second)
+  }
+
+  override def afterEach(): Unit = DbFixtures.withMyDatabase { database =>
+    Await.result(deleteLevel(database, "some-guid"), 1.second)
+    Await.result(deleteLevel(database, "another-guid"), 1.second)
+  }
+
   "LevelRepository" when {
 
-    "receiving a Cigarra guid and a level to persist a Level" should {
+    "receiving a Cigarra guid and a Level to persist a Level" should {
 
-      "persist the level and return its guid" in {
-        val repository = new LevelRepository()
-        val levelGuid = repository.createLevel(cigarraGuid = "24c672c2-589c-4728-a4c3-0be50a269918",
-                                               description = "some-description",
-                                               solution = "some-solution",
-                                               levelGuid = "some-guid")
+      "persist the level" in {
+        DbFixtures.withMyDatabase { database =>
+          val level = Level(guid = "some-guid", description = "some-description", solution = "some-solution")
+          val repository = new LevelRepository(database)
 
-        levelGuid mustBe defined
-        repository.cigarrasLevels(UUID.fromString("24c672c2-589c-4728-a4c3-0be50a269918")).exists { level: Level =>
-          level.guid.toString.equals(levelGuid.get)
+          Await.result(repository.save(level.guid, level.description, level.solution, "some-cigarra-guid"), 1.second)
+
+          Await.result(repository.find("some-guid"), 1.second) mustBe defined
         }
       }
     }
 
-    "receiving a Cigarra guid to retrieve its first level " when {
+    "receiving a Cigarra guid to find the last created Level" when {
 
-      "the level exists" should {
+      "the Cigarra has one level" should {
 
-        "return the Level" in {
-          val cigarraGuid = UUID.fromString("24c672c2-589c-4728-a4c3-0be50a269918")
-          val expectedLevel = Level(guid = "some-guid", description = "some-description", solution = "some-solution")
-          val repository = new LevelRepository()
-          repository.cigarrasLevels.put(cigarraGuid, ListBuffer(expectedLevel))
+        "return the guid of the level" in {
+          DbFixtures.withMyDatabase { database =>
+            val level = Level(guid = "some-guid", description = "some-description", solution = "some-solution")
+            val repository = new LevelRepository(database)
+            Await.result(
+              repository.save(levelGuid = level.guid,
+                              description = level.description,
+                              solution = level.solution,
+                              cigarraGuid = "some-cigarra-guid"),
+              1.second
+            )
 
-          val result = repository.findFirstLevel(cigarraGuid.toString)
+            Await.result(repository.findLastCreatedLevelGuid("some-cigarra-guid"), 1.second) mustBe Some("some-guid")
+          }
+        }
+      }
 
-          result mustBe Some(expectedLevel)
+      "the Cigarra has two levels" should {
+
+        "return the guid of the first one" in {
+          DbFixtures.withMyDatabase { database =>
+            val previousLevel = Level(guid = "some-guid", description = "some-description", solution = "some-solution")
+            val repository = new LevelRepository(database)
+            Await.result(
+              repository.save(levelGuid = previousLevel.guid,
+                              description = previousLevel.description,
+                              solution = previousLevel.solution,
+                              cigarraGuid = "some-cigarra-guid"),
+              1.second
+            )
+
+            val newLevel =
+              Level(guid = "another-guid", description = "another-description", solution = "another-solution")
+            Await.result(
+              repository.save(levelGuid = newLevel.guid,
+                              description = newLevel.description,
+                              solution = newLevel.solution,
+                              cigarraGuid = "some-cigarra-guid"),
+              1.second
+            )
+            Await.result(repository.linkToPreviousLevel(newLevel.guid, previousLevel.guid), 1.second)
+
+            Await.result(repository.findLastCreatedLevelGuid("some-cigarra-guid"), 1.second) mustBe Some("another-guid")
+          }
+        }
+      }
+
+      "the Cigarra has no level" should {
+
+        "return None" in {
+          DbFixtures.withMyDatabase { database =>
+            val repository = new LevelRepository(database)
+
+            Await.result(repository.findLastCreatedLevelGuid("some-cigarra-guid"), 1.second) mustBe None
+          }
         }
       }
     }
 
-    "receiving a Cigarra guid and a level guid to find a Level" when {
+    "receiving two level guid to link them" should {
+
+      "connect the previous level to the new next" in {
+        DbFixtures.withMyDatabase { database =>
+          val repository = new LevelRepository(database)
+
+          val previousLevel = Level(guid = "some-guid", description = "first-description", solution = "first-solution")
+          Await.result(repository.save(previousLevel.guid,
+                                       description = previousLevel.description,
+                                       solution = previousLevel.solution,
+                                       cigarraGuid = "some-cigarra-guid"),
+                       1.second)
+
+          val newLevel =
+            Level(guid = "another-guid", description = "second-description", solution = "second-solution")
+          Await.result(
+            repository.save(levelGuid = newLevel.guid,
+                            description = newLevel.description,
+                            solution = newLevel.solution,
+                            cigarraGuid = "some-cigarra-guid"),
+            1.second
+          )
+
+          Await.result(repository.linkToPreviousLevel(newLevel.guid, previousLevel.guid), 1.second)
+
+          Await.result(repository.findNext(previousLevel.guid), 1.second).get mustEqual newLevel
+        }
+      }
+    }
+
+    "receiving a Level guid to retrieve a Level" when {
 
       "the Level exist" should {
 
         "return the Level" in {
-          val cigarraGuid = UUID.fromString("24c672c2-589c-4728-a4c3-0be50a269918")
-          val levelGuid = "13b497c2-ab38-1098-b863-abc13459573a"
-          val expectedLevel = Level(guid = levelGuid, description = "some-description", solution = "some-solution")
-          val repository = new LevelRepository()
-          repository.cigarrasLevels.put(cigarraGuid, ListBuffer(expectedLevel))
+          DbFixtures.withMyDatabase { database =>
+            val level = Level(guid = "some-guid", description = "some-description", solution = "some-solution")
+            val repository = new LevelRepository(database)
+            Await.result(repository.save(levelGuid = level.guid,
+                                         description = level.description,
+                                         solution = level.solution,
+                                         cigarraGuid = "some-cigarra-guid"),
+                         1.second)
 
-          val result = repository.findLevel(cigarraGuid.toString, levelGuid)
-
-          result mustBe Some(expectedLevel)
+            Await.result(repository.find(level.guid), 1.second) mustBe Some(level)
+          }
         }
       }
 
       "the Level does not exist" should {
 
         "return None" in {
-          val cigarraGuid = UUID.fromString("24c672c2-589c-4728-a4c3-0be50a269918")
-          val levelGuid = "13b497c2-ab38-1098-b863-abc13459573a"
-          val repository = new LevelRepository()
+          DbFixtures.withMyDatabase { database =>
+            val level = Level(guid = "some-guid", description = "some-description", solution = "some-solution")
+            val repository = new LevelRepository(database)
 
-          val result = repository.findLevel(cigarraGuid.toString, levelGuid)
-
-          result mustBe None
+            Await.result(repository.find(level.guid), 1.second) mustBe None
+          }
         }
       }
     }
 
-    "receiving a Cigarra guid and a level guid to find the next Level" when {
+    "receiving a Level guid to find the next Level" when {
 
       "the Level to find exists and it is not the last one" should {
 
         "return the next Level" in {
-          val cigarraGuid = UUID.fromString("24c672c2-589c-4728-a4c3-0be50a269918")
-          val currentLevel = Level("some-guid", "some-description", "some-solution")
-          val nextLevel = Level("next-level-guid", "next-level-description", "next-level-solution")
-          val repository = new LevelRepository()
-          repository.cigarrasLevels.put(cigarraGuid, ListBuffer(currentLevel, nextLevel))
+          DbFixtures.withMyDatabase { database =>
+            val repository = new LevelRepository(database)
 
-          val result = repository.findNextLevel(cigarraGuid.toString, "some-guid")
+            val previousLevel =
+              Level(guid = "some-guid", description = "first-description", solution = "first-solution")
+            Await.result(
+              repository.save(levelGuid = previousLevel.guid,
+                              description = previousLevel.description,
+                              solution = previousLevel.solution,
+                              cigarraGuid = "some-cigarra-guid"),
+              1.second
+            )
 
-          result mustBe Some(nextLevel)
+            val newLevel =
+              Level(guid = "another-guid", description = "second-description", solution = "second-solution")
+            Await.result(
+              repository.save(levelGuid = newLevel.guid,
+                              description = newLevel.description,
+                              solution = newLevel.solution,
+                              cigarraGuid = "some-cigarra-guid"),
+              1.second
+            )
+            Await.result(repository.linkToPreviousLevel(newLevel.guid, previousLevel.guid), 1.second)
+
+            Await.result(repository.findNext(previousLevel.guid), 1.second) mustBe Some(newLevel)
+          }
         }
       }
 
-      "the Level to find exists and it is the last one" should {
+      "the Level to find does not exist" should {
 
         "return None" in {
-          val cigarraGuid = UUID.fromString("24c672c2-589c-4728-a4c3-0be50a269918")
-          val level = Level("some-guid", "some-description", "some-solution")
-          val repository = new LevelRepository()
-          repository.cigarrasLevels.put(cigarraGuid, ListBuffer(level))
+          DbFixtures.withMyDatabase { database =>
+            val repository = new LevelRepository(database)
 
-          val result = repository.findNextLevel(cigarraGuid.toString, "some-guid")
+            val firstLevel = Level(guid = "some-guid", description = "first-description", solution = "first-solution")
+            Await.result(repository.save(levelGuid = firstLevel.guid,
+                                         description = firstLevel.description,
+                                         solution = firstLevel.solution,
+                                         cigarraGuid = "some-cigarra-guid"),
+                         1.second)
 
-          result mustBe None
-        }
-      }
-
-      "the Level to find" +
-        " does not exist" should {
-
-        "return None" in {
-          val cigarraGuid = UUID.fromString("24c672c2-589c-4728-a4c3-0be50a269918")
-          val currentLevel = Level("some-guid", "some-description", "some-solution")
-          val repository = new LevelRepository()
-          repository.cigarrasLevels.put(cigarraGuid, ListBuffer(currentLevel))
-
-          val result = repository.findNextLevel(cigarraGuid.toString, "not-existing-guid")
-
-          result mustBe None
+            Await.result(repository.findNext(firstLevel.guid), 1.second) mustBe None
+          }
         }
       }
     }
 
+    "receiving a Cigarra guid to return the amount of its Levels" should {
+
+      "return the amount of the Cigarra Levels" in {
+        DbFixtures.withMyDatabase { database =>
+          val level = Level(guid = "some-guid", description = "some-description", solution = "some-solution")
+          val repository = new LevelRepository(database)
+          Await.result(repository.save(levelGuid = level.guid,
+                                       description = level.description,
+                                       solution = level.solution,
+                                       cigarraGuid = "some-cigarra-guid"),
+                       1.second)
+
+          Await.result(repository.amountOfLevel("some-cigarra-guid"), 1.second) mustBe 1
+        }
+      }
+    }
   }
+
+  def deleteLevel(db: Database, guid: String) =
+    Future {
+      db.withConnection { implicit connection =>
+        SQL(
+          """
+                DELETE FROM level
+                WHERE guid = {guid};
+          """
+        ).on(
+            'guid -> guid
+          )
+          .executeInsert()
+      }
+    }
 }

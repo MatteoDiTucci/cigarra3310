@@ -4,10 +4,13 @@ import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import services.{CigarraService, LevelService}
 
+import scala.concurrent.{Await, ExecutionContext}
 import scala.util.{Failure, Success, Try}
+import scala.concurrent.duration._
 
 @Singleton
-class CigarraController @Inject()(cigarraService: CigarraService, levelService: LevelService)(cc: ControllerComponents)
+class CigarraController @Inject()(cigarraService: CigarraService, levelService: LevelService)(cc: ControllerComponents)(
+    implicit ex: ExecutionContext)
     extends AbstractController(cc) {
 
   private val CIGARRA_NAME_FROM_KEY = "name"
@@ -37,7 +40,7 @@ class CigarraController @Inject()(cigarraService: CigarraService, levelService: 
     }
 
   def findFirstLevel(cigarraGuid: String) = Action {
-    val firstLevel = levelService.findFirstLevel(cigarraGuid)
+    val firstLevel = Await.result(cigarraService.findFirstLevel(cigarraGuid), 1.second)
     firstLevel.fold(BadRequest("Cigarra not found"))(level => SeeOther(s"/cigarra/$cigarraGuid/level/${level.guid}"))
   }
 

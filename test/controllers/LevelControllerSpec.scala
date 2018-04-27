@@ -14,6 +14,7 @@ import play.api.http.Status.BAD_REQUEST
 import play.api.test.Helpers._
 
 import scala.concurrent.{Await, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
   "LevelController" when {
@@ -27,7 +28,7 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
 
         val level = Level("some-level-guid", "some-cigarra-name", "some-solution")
         val levelService = mock[LevelService]
-        when(levelService.findLevel(cigarra.guid, level.guid)).thenReturn(Some(level))
+        when(levelService.findLevel(level.guid)).thenReturn(Future.successful(Some(level)))
 
         val controller = new LevelController(cigarraService, levelService)(Helpers.stubControllerComponents())
 
@@ -52,9 +53,9 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
           val nextLevel = Level("next-level-guid", "next-level-description", "next-level-solution")
           val levelService = mock[LevelService]
           when(levelService.solveLevel(any[String], any[String], any[String]))
-            .thenReturn(Some(true))
-          when(levelService.findNextLevel(any[String], any[String]))
-            .thenReturn(Some(nextLevel))
+            .thenReturn(Future.successful(true))
+          when(levelService.findNextLevel(any[String]))
+            .thenReturn(Future.successful(Some(nextLevel)))
 
           val controller = new LevelController(cigarraService, levelService)(Helpers.stubControllerComponents())
 
@@ -75,9 +76,9 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
           val nextLevel = Level("next-level-guid", "next-level-description", "next-level-solution")
           val levelService = mock[LevelService]
           when(levelService.solveLevel(any[String], any[String], any[String]))
-            .thenReturn(Some(true))
-          when(levelService.findNextLevel(any[String], any[String]))
-            .thenReturn(None)
+            .thenReturn(Future.successful(true))
+          when(levelService.findNextLevel(any[String]))
+            .thenReturn(Future.successful(None))
 
           val controller = new LevelController(cigarraService, levelService)(Helpers.stubControllerComponents())
 
@@ -97,7 +98,7 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
 
           val levelService = mock[LevelService]
           when(levelService.solveLevel(any[String], any[String], any[String]))
-            .thenReturn(Some(false))
+            .thenReturn(Future.successful(false))
 
           val controller = new LevelController(cigarraService, levelService)(Helpers.stubControllerComponents())
 
@@ -108,17 +109,14 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
         }
       }
 
-      "the Level cannot be found" should {
+      "the request does not contain the solution" should {
 
         "return Bad Request" in {
           val request =
             FakeRequest("POST", "/cigarra/some-cigarra-guid/level/current-level-guid")
-              .withFormUrlEncodedBody("solution" -> "some-solution")
+              .withFormUrlEncodedBody()
 
-          val levelService = mock[LevelService]
-          when(levelService.solveLevel(any[String], any[String], any[String])).thenReturn(None)
-
-          val controller = new LevelController(cigarraService, levelService)(Helpers.stubControllerComponents())
+          val controller = new LevelController(cigarraService, mock[LevelService])(Helpers.stubControllerComponents())
 
           val result = controller.solveLevel(cigarra.guid, "current-level-guid")(request)
 

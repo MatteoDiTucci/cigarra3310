@@ -1,12 +1,11 @@
 package controllers
 
-import domain.Cigarra
 import javax.inject._
 import play.api.mvc._
 import services.{CigarraService, LevelService}
 
-import scala.util.{Failure, Success, Try}
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 @Singleton
 class CigarraEditorController @Inject()(cigarraService: CigarraService, levelService: LevelService)(
@@ -29,17 +28,20 @@ class CigarraEditorController @Inject()(cigarraService: CigarraService, levelSer
       .findCigarra(cigarraGuid)
       .map { cigarra =>
         getDescriptionAndSolutionFromRequest(request).fold(BadRequest("Missing description or solution"))(
-          descriptionAndSolution =>
-            createLevelWithDescriptionAndSolution(cigarra.get.guid, descriptionAndSolution)
-              .fold(InternalServerError("An error occurred"))(_ =>
-                Ok(views.html.editor(cigarra.get.name, cigarraGuid))))
+          descriptionAndSolution => {
+            createLevelWithDescriptionAndSolution(cigarra.get.guid, descriptionAndSolution).map { levelGuid =>
+              cigarraService.setFirstLevel(cigarra.get.guid, levelGuid)
+            }
+            Ok(views.html.editor(cigarra.get.name, cigarraGuid))
+          })
       }
       .recoverWith {
         case _: Throwable => Future.successful(BadRequest("Missing description or solution"))
       }
   }
 
-  private def createLevelWithDescriptionAndSolution(cigarraGuid: String, descriptionAndSolution: (String, String)) =
+  private def createLevelWithDescriptionAndSolution(cigarraGuid: String,
+                                                    descriptionAndSolution: (String, String)): Future[String] =
     levelService
       .createLevel(cigarraGuid, descriptionAndSolution._1, descriptionAndSolution._2)
 
