@@ -9,13 +9,13 @@ The number 3310 is an homage to the Nokia 3310 mobile phone.
 - Run `sbt dist` to produce the artifact `target/universal/cigarra3310-1.0-SNAPSHOT.zip`
 
 - Extract artifact in another folder, for example `~/Desktop/cigarra3310/dpl`, with 
-`mkdir ~/Desktop/cigarra3310/dpl -p && 
- rm -R ~/Desktop/cigarra3310/dpl && 
+`mkdir -p ~/Desktop/cigarra3310/dpl && 
+ rm -R ~/Desktop/cigarra3310/* && 
  unzip -d ~/Desktop/cigarra3310/dpl target/universal/*-1.0-SNAPSHOT.zip && 
  mv ~/Desktop/cigarra3310/dpl/*/* ~/Desktop/cigarra3310/dpl/ && 
  rm ~/Desktop/cigarra3310/dpl/bin/*.bat && 
  mv ~/Desktop/cigarra3310/dpl/bin/* ~/Desktop/cigarra3310/dpl/bin/start && 
- cp -R .ebextensions ~/Desktop/cigarra3310/
+ cp -R .ebextensions ~/Desktop/cigarra3310/ &&  
  cp Dockerfile ~/Desktop/cigarra3310/`
 
 - Inside `~/Desktop/cigarra3310/Dockerfile` substitute the value of `play.http.secret.key` with the result of `sbt playGenerateSecret`
@@ -23,9 +23,7 @@ The number 3310 is an homage to the Nokia 3310 mobile phone.
 ## Create DB to be deployed
 - In folder `~/Desktop/cigarra3310/dpl` create a sqlite3 db with `sqlite3 cigarra3310.db` and then `.database`
 
-- Adjust database permissions `chmod 770 cigarra3310.db`
-
-- Create the db schema with `sqlite3 cigarra3310.db` and then 
+- Create the db schema with 
 `CREATE TABLE level (
   guid text PRIMARY KEY NOT NULL,
   description text NOT NULL,
@@ -40,6 +38,8 @@ CREATE TABLE cigarra (
 );
 CREATE INDEX cigarra_guid_index ON cigarra (guid);
 CREATE INDEX level_guid_index ON level (guid);`
+
+- Adjust database permissions `chmod 770 cigarra3310.db`
 
 ## Run Docker container locally
 - Prerequisites: Docker
