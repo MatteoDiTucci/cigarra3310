@@ -13,7 +13,7 @@ class Cigarra3310Spec
     with OneBrowserPerTest {
 
   feature("Cigarra3310") {
-    scenario("As a master I want to create a Cigarra") {
+    scenario("As a Cigarra creator I want to create a Cigarra") {
       Given("I navigate to the home page")
       val homePage = "http://localhost:" + port + "/"
       go to homePage

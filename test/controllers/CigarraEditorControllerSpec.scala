@@ -17,91 +17,81 @@ import scala.concurrent.Future
 class CigarraEditorControllerSpec extends WordSpec with MustMatchers with MockitoSugar with Results {
   "CigarraEditorController" when {
 
-    "a GET request for the Master editor page is made" when {
+    "a GET request for the Cigarra editor page is made" should {
 
-      "the Cigarra exists" should {
+      "return the Cigarra editor html" in {
+        val cigarraName = "some-name"
+        val cigarraGuid = "some-cigarra-guid"
+        val cigarraService = mock[CigarraService]
+        when(cigarraService.findCigarra(any[String]))
+          .thenReturn(Future.successful(Cigarra(guid = "some-guid", name = cigarraName)))
+        val controller = createController(cigarraService = cigarraService)
 
-        "return the Master editor html" in {
-          val cigarraName = "some-name"
-          val cigarraGuid = "some-cigarra-guid"
-          val cigarraService = mock[CigarraService]
-          when(cigarraService.findCigarra(any[String]))
-            .thenReturn(Future.successful(Cigarra(guid = "some-guid", name = cigarraName)))
-          val controller = createController(cigarraService = cigarraService)
+        val result = controller.levelEditor(cigarraGuid)(FakeRequest())
 
-          val result = controller.index(cigarraGuid)(FakeRequest())
+        contentAsString(result) must include(cigarraName)
+        contentAsString(result) must include(cigarraGuid)
+      }
+    }
 
-          contentAsString(result) must include(cigarraName)
-          contentAsString(result) must include(cigarraGuid)
+    "receiving a valid POST request to create a new Level" should {
+
+      "create a new level and return the Editor Page" in {
+        val cigarraGuid = "some-cigarra-guid"
+        val request =
+          FakeRequest("POST", s"/cigarra/$cigarraGuid/level").withFormUrlEncodedBody("description" -> "some-name",
+                                                                                     "solution" -> "some-solution")
+
+        val levelService = mock[LevelService]
+        when(levelService.createLevel(any[String], any[String], any[String]))
+          .thenReturn(Future.successful("level-guid"))
+
+        val cigarraName = "some-name"
+        val cigarraService = mock[CigarraService]
+        val cigarra = Cigarra(guid = "some-guid", name = cigarraName)
+        when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(cigarra))
+
+        val controller = createController(cigarraService, levelService)
+
+        val result = controller.createLevel("some-cigarra-guid")(request)
+
+        contentAsString(result) must include(cigarraName)
+        contentAsString(result) must include(cigarraGuid)
+        contentAsString(result) must include("Feedback")
+
+        eventually {
+          verify(levelService, times(1)).createLevel(any[String], any[String], any[String])
         }
       }
     }
 
-    "receiving a valid POST request to create a new Level" when {
-      val cigarraGuid = "some-cigarra-guid"
-      val request =
-        FakeRequest("POST", s"/cigarra/$cigarraGuid/level").withFormUrlEncodedBody("description" -> "some-name",
-                                                                                   "solution" -> "some-solution")
+    "receiving a malformed POST" when {
+      val cigarra = Cigarra(guid = "some-guid", name = "some-cigarra-name")
+      val cigarraService = mock[CigarraService]
+      when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(cigarra))
+      val controller = createController(cigarraService)
 
-      "the Cigarra exists" should {
+      "the request has no level description" should {
+        val request =
+          FakeRequest("POST", s"/cigarra/some-cigarra-guid/level").withFormUrlEncodedBody("solution" -> "some-solution")
 
-        "create a new level and return the Editor Page" in {
-          val levelService = mock[LevelService]
-          when(levelService.createLevel(any[String], any[String], any[String]))
-            .thenReturn(Future.successful("level-guid"))
-
-          val cigarraName = "some-name"
-          val cigarraService = mock[CigarraService]
-          val cigarra = Cigarra(guid = "some-guid", name = cigarraName)
-          when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(cigarra))
-
-          val controller = createController(cigarraService, levelService)
-
+        "return a BadRequest" in {
           val result = controller.createLevel("some-cigarra-guid")(request)
 
-          contentAsString(result) must include(cigarraName)
-          contentAsString(result) must include(cigarraGuid)
-          contentAsString(result) must include("Feedback")
-
-          eventually {
-            verify(levelService, times(1)).createLevel(any[String], any[String], any[String])
-          }
+          status(result) mustBe BAD_REQUEST
         }
       }
-    }
 
-    "receiving a POST without level description" should {
-      val request =
-        FakeRequest("POST", s"/cigarra/some-cigarra-guid/level").withFormUrlEncodedBody("solution" -> "some-solution")
+      "request has no level solution" should {
+        val request =
+          FakeRequest("POST", s"/cigarra/some-cigarra-guid/level")
+            .withFormUrlEncodedBody("description" -> "some-description")
 
-      "return a BadRequest" in {
-        val cigarra = Cigarra(guid = "some-guid", name = "some-cigarra-name")
-        val cigarraService = mock[CigarraService]
-        when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(cigarra))
+        "return a BadRequest" in {
+          val result = controller.createLevel("some-cigarra-guid")(request)
 
-        val controller = createController(cigarraService)
-
-        val result = controller.createLevel("some-cigarra-guid")(request)
-
-        status(result) mustBe BAD_REQUEST
-      }
-    }
-
-    "receiving a POST without level solution" should {
-      val request =
-        FakeRequest("POST", s"/cigarra/some-cigarra-guid/level")
-          .withFormUrlEncodedBody("description" -> "some-description")
-
-      "return a BadRequest" in {
-        val cigarraService = mock[CigarraService]
-        val cigarra = Cigarra(guid = "some-guid", name = "some-cigarra-name")
-        when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(cigarra))
-
-        val controller = createController(cigarraService)
-
-        val result = controller.createLevel("some-cigarra-guid")(request)
-
-        status(result) mustBe BAD_REQUEST
+          status(result) mustBe BAD_REQUEST
+        }
       }
     }
   }

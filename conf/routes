@@ -8,8 +8,8 @@ GET     /assets/*file                           controllers.Assets.versioned(fil
 # An example controller showing how to write asynchronous code
 GET     /                                       controllers.HomeController.index
 
-# Master editor page
-GET     /cigarra/:id/level                      controllers.CigarraEditorController.index(id)
+# Cigarra editor page
+GET     /cigarra/:id/level                      controllers.CigarraEditorController.levelEditor(id)
 
 # Create new Cigarra
 POST     /cigarra                               controllers.CigarraController.create
@@ -17,13 +17,13 @@ POST     /cigarra                               controllers.CigarraController.cr
 # Add new Level
 POST     /cigarra/:id/level                     controllers.CigarraEditorController.createLevel(id)
 
-# Master editor page
+# Cigarra editor page
 GET     /cigarra/:id/publication                controllers.CigarraPublicationController.index(id)
 
 # Play Level page
 GET     /cigarra/:cigarraId/level/:levelId      controllers.LevelController.level(cigarraId, levelId)
 
-# Master editor page
+# Cigarra editor page
 GET     /cigarra/:id                            controllers.CigarraController.findFirstLevel(id)
 
 # Solve Level

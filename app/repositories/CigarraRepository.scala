@@ -76,22 +76,6 @@ class CigarraRepository @Inject()(db: Database)(
       }
     }
 
-  private def cigarraLevelCount(guid: String) =
-    Future {
-      db.withConnection { implicit connection =>
-        SQL(
-          """
-          SELECT count(1)
-          FROM level
-          WHERE cigarra_guid = {guid};
-        """
-        ).on(
-            'guid -> guid
-          )
-          .as(SqlParser.scalar[Int].single)
-      }
-    }
-
   val cigarras: RowParser[Cigarra] =
     str("guid") ~
       str("name") map {

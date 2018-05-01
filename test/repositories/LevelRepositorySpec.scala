@@ -23,7 +23,7 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
 
   "LevelRepository" when {
 
-    "receiving a Cigarra guid and a Level to persist a Level" should {
+    "receiving a Cigarra guid and a Level to save a Level" should {
 
       "persist the level" in {
         DbFixtures.withMyDatabase { database =>
@@ -37,7 +37,7 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
       }
     }
 
-    "receiving a Cigarra guid to find the last created Level" when {
+    "receiving a Cigarra guid to find its last created Level" when {
 
       "the Cigarra has one level" should {
 
@@ -149,7 +149,7 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
 
     "receiving a Level guid to find the next Level" when {
 
-      "the Level to find exists and it is not the last one" should {
+      "the Level to find exists" should {
 
         "return the next Level" in {
           DbFixtures.withMyDatabase { database =>
@@ -200,22 +200,6 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
       }
     }
 
-    "receiving a Cigarra guid to return the amount of its Levels" should {
-
-      "return the amount of the Cigarra Levels" in {
-        DbFixtures.withMyDatabase { database =>
-          val level = Level(guid = "some-guid", description = "some-description", solution = "some-solution")
-          val repository = new LevelRepository(database)
-          Await.result(repository.save(levelGuid = level.guid,
-                                       description = level.description,
-                                       solution = level.solution,
-                                       cigarraGuid = "some-cigarra-guid"),
-                       1.second)
-
-          Await.result(repository.amountOfLevel("some-cigarra-guid"), 1.second) mustBe 1
-        }
-      }
-    }
   }
 
   def deleteLevel(db: Database, guid: String) =

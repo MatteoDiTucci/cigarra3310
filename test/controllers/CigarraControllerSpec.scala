@@ -16,40 +16,38 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class CigarraControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
   "CigarraController" when {
 
-    "receiving a valid POST request for creating a new Cigarra" when {
+    "receiving a valid POST request for creating a new Cigarra" should {
 
-      "it is possible to create a new Cigarra" should {
+      "redirect to the Cigarra editor page" in {
+        val request = FakeRequest("POST", "/").withFormUrlEncodedBody("name" -> "some-name")
+        val cigarraService = mock[CigarraService]
+        when(cigarraService.createCigarra("some-name")).thenReturn("some-id")
 
-        "redirect to the Master editor page" in {
-          val request = FakeRequest("POST", "/").withFormUrlEncodedBody("name" -> "some-name")
-          val cigarraService = mock[CigarraService]
-          when(cigarraService.createCigarra("some-name")).thenReturn("some-id")
+        val controller = createController(cigarraService)
 
-          val controller = createController(cigarraService)
+        val result = controller.create()(request)
 
-          val result = controller.create()(request)
-
-          status(result) mustEqual SEE_OTHER
-          redirectLocation(result).get must endWith("/cigarra/some-id/level")
-          verify(cigarraService, times(1)).createCigarra("some-name")
-        }
-      }
-
-      "receiving an invalid POST request for creating a new Cigarra" should {
-        val request = FakeRequest("POST", "/").withFormUrlEncodedBody()
-
-        "return a BadRequest" in {
-          val controller = createController()
-
-          val result = controller.create()(request)
-
-          status(result) mustEqual BAD_REQUEST
-        }
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).get must endWith("/cigarra/some-id/level")
+        verify(cigarraService, times(1)).createCigarra("some-name")
       }
     }
+
+    "receiving a malformed POST request for creating a new Cigarra" should {
+      val request = FakeRequest("POST", "/").withFormUrlEncodedBody()
+
+      "return a BadRequest" in {
+        val controller = createController()
+
+        val result = controller.create()(request)
+
+        status(result) mustEqual BAD_REQUEST
+      }
+    }
+
     "receiving a GET request for playing a Cigarra" when {
 
-      "the Cigarra exists" should {
+      "the Cigarra has at least one level" should {
 
         "redirect to the the first level of the Cigarra" in {
           val cigarraService = mock[CigarraService]
@@ -65,9 +63,9 @@ class CigarraControllerSpec extends WordSpec with MustMatchers with MockitoSugar
         }
       }
 
-      "the Cigarra does not exist" should {
+      "the Cigarra has no level" should {
 
-        "return a Bad Request" in {
+        "return an Internal Server error" in {
           val cigarraService = mock[CigarraService]
           when(cigarraService.findFirstLevel(any[String]))
             .thenReturn(Future.successful(None))
@@ -77,7 +75,7 @@ class CigarraControllerSpec extends WordSpec with MustMatchers with MockitoSugar
           val request = FakeRequest("GET", s"/cigarra/$cigarraGuid")
           val result = controller.findFirstLevel(cigarraGuid)(request)
 
-          status(result) mustEqual BAD_REQUEST
+          status(result) mustEqual INTERNAL_SERVER_ERROR
         }
       }
     }

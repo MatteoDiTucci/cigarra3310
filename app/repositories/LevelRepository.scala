@@ -105,19 +105,4 @@ class LevelRepository @Inject()(db: Database)(
           .execute()
       }
     }
-
-  def amountOfLevel(cigarraGuid: String): Future[Int] = Future {
-    db.withConnection { implicit connection =>
-      SQL(
-        """
-          SELECT count(1)
-          FROM level
-          WHERE cigarra_guid = {cigarraGuid};
-        """
-      ).on(
-          'cigarraGuid -> cigarraGuid
-        )
-        .as(SqlParser.scalar[Int].single)
-    }
-  }
 }

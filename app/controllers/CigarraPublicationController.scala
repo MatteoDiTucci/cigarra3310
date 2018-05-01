@@ -5,7 +5,7 @@ import play.api.Configuration
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 import services.CigarraService
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class CigarraPublicationController @Inject()(cigarraService: CigarraService, playConfiguration: Configuration)(
@@ -16,9 +16,6 @@ class CigarraPublicationController @Inject()(cigarraService: CigarraService, pla
     cigarraService
       .findCigarra(cigarraGuid)
       .map(cigarra => Ok(views.html.publication(cigarra.name, s"/cigarra/$cigarraGuid")))
-      .recoverWith {
-        case _: Throwable => Future.successful(InternalServerError("Cigarra not found"))
-      }
   }
 
 }

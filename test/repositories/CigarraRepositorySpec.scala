@@ -21,37 +21,35 @@ class CigarraRepositorySpec extends WordSpec with MustMatchers with BeforeAndAft
 
   "CigarraRepository" when {
 
-    "persist the Cigarra" in {
-      DbFixtures.withMyDatabase { database =>
-        val cigarra = Cigarra("some-guid", "some-name")
-        val cigarraRepository = new CigarraRepository(database)
+    "saving the Cigarra" should {
+      "persist it in DB" in {
+        DbFixtures.withMyDatabase { database =>
+          val cigarra = Cigarra("some-guid", "some-name")
+          val cigarraRepository = new CigarraRepository(database)
 
-        Await.result(cigarraRepository.save("some-guid", "some-name"), 1.second)
+          Await.result(cigarraRepository.save("some-guid", "some-name"), 1.second)
 
-        Await.result(cigarraRepository.findCigarra("some-guid"), 1.second) mustEqual cigarra
+          Await.result(cigarraRepository.findCigarra("some-guid"), 1.second) mustEqual cigarra
+        }
       }
     }
 
-    "retrieving an existing Cigarra by its guid" when {
+    "retrieving an existing Cigarra by its guid" should {
+      "return the Cigarra" in {
+        DbFixtures.withMyDatabase { database =>
+          val cigarra = Cigarra("some-guid", "some-name")
+          val cigarraRepository = new CigarraRepository(database)
+          Await.result(cigarraRepository.save(cigarra.guid, cigarra.name), 1.second)
 
-      "the Cigarra exists" should {
-
-        "return the related Cigarra" in {
-          DbFixtures.withMyDatabase { database =>
-            val cigarra = Cigarra("some-guid", "some-name")
-            val cigarraRepository = new CigarraRepository(database)
-            Await.result(cigarraRepository.save(cigarra.guid, cigarra.name), 1.second)
-
-            Await.result(cigarraRepository.findCigarra("some-guid"), 1.second) mustBe cigarra
-          }
+          Await.result(cigarraRepository.findCigarra("some-guid"), 1.second) mustBe cigarra
         }
       }
 
       "retrieving the first Level guid of a Cigarra by its guid" when {
 
-        "the first level is set" should {
+        "the first level exists" should {
 
-          "return the first Cigarra Level guid" in {
+          "return the first Level guid" in {
             DbFixtures.withMyDatabase { database =>
               val level = Level("first-level-guid", "some-description", "some-solution")
               val cigarraRepository = new CigarraRepository(database)
@@ -63,7 +61,7 @@ class CigarraRepositorySpec extends WordSpec with MustMatchers with BeforeAndAft
           }
         }
 
-        "the first Level is not set" should {
+        "the first Level does not exist" should {
 
           "return None" in {
             DbFixtures.withMyDatabase { database =>

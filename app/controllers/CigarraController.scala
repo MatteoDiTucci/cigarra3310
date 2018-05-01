@@ -4,9 +4,8 @@ import javax.inject.{Inject, Singleton}
 import play.api.mvc._
 import services.{CigarraService, LevelService}
 
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
-import scala.concurrent.duration._
 
 @Singleton
 class CigarraController @Inject()(cigarraService: CigarraService, levelService: LevelService)(cc: ControllerComponents)(
@@ -41,10 +40,8 @@ class CigarraController @Inject()(cigarraService: CigarraService, levelService: 
 
   def findFirstLevel(cigarraGuid: String): Action[AnyContent] = Action.async {
     cigarraService.findFirstLevel(cigarraGuid).map { maybeFirstLevel =>
-      maybeFirstLevel.fold(BadRequest("Cigarra not found"))(level =>
+      maybeFirstLevel.fold(InternalServerError("Cigarra has level to play"))(level =>
         SeeOther(s"/cigarra/$cigarraGuid/level/${level.guid}"))
     }
-
   }
-
 }

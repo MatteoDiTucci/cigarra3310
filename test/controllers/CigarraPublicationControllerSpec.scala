@@ -18,7 +18,7 @@ class CigarraPublicationControllerSpec extends WordSpec with MustMatchers with M
 
     "receiving a GET request to publish a Cigarra" should {
 
-      "return the url for playing to the Cigarra" in {
+      "return the url for playing the Cigarra" in {
         val cigarraService = mock[CigarraService]
         val cigarra = Cigarra("some-cigarra-guid", "some-cigarra-name")
         when(cigarraService.findCigarra(any[String]))
@@ -33,6 +33,6 @@ class CigarraPublicationControllerSpec extends WordSpec with MustMatchers with M
     }
   }
 
-  private def createController(cigarraService: CigarraService, configuration: Configuration = mock[Configuration]) =
-    new CigarraPublicationController(cigarraService, configuration)(stubControllerComponents())
+  private def createController(cigarraService: CigarraService) =
+    new CigarraPublicationController(cigarraService, mock[Configuration])(stubControllerComponents())
 }

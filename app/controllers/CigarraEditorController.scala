@@ -15,13 +15,10 @@ class CigarraEditorController @Inject()(cigarraService: CigarraService, levelSer
   private val LEVEL_DESCRIPTION_FROM_KEY = "description"
   private val LEVEL_SOLUTION_FROM_KEY = "solution"
 
-  def index(cigarraGuid: String): Action[AnyContent] = Action.async {
+  def levelEditor(cigarraGuid: String): Action[AnyContent] = Action.async {
     cigarraService
       .findCigarra(cigarraGuid)
       .map(someCigarra => Ok(views.html.editor(someCigarra.name, cigarraGuid)))
-      .recoverWith {
-        case _: Throwable => Future.successful(InternalServerError)
-      }
   }
   def createLevel(cigarraGuid: String): Action[AnyContent] = Action.async { request =>
     cigarraService
@@ -29,19 +26,15 @@ class CigarraEditorController @Inject()(cigarraService: CigarraService, levelSer
       .map { cigarra =>
         getDescriptionAndSolutionFromRequest(request).fold(BadRequest("Missing description or solution"))(
           descriptionAndSolution => {
-            createLevelWithDescriptionAndSolution(cigarra.guid, descriptionAndSolution).map { levelGuid =>
+            createLevel(cigarra.guid, descriptionAndSolution).map { levelGuid =>
               cigarraService.setFirstLevel(cigarra.guid, levelGuid)
             }
             Ok(views.html.editor(cigarra.name, cigarraGuid))
           })
       }
-      .recoverWith {
-        case _: Throwable => Future.successful(BadRequest("Missing description or solution"))
-      }
   }
 
-  private def createLevelWithDescriptionAndSolution(cigarraGuid: String,
-                                                    descriptionAndSolution: (String, String)): Future[String] =
+  private def createLevel(cigarraGuid: String, descriptionAndSolution: (String, String)): Future[String] =
     levelService
       .createLevel(cigarraGuid, descriptionAndSolution._1, descriptionAndSolution._2)
 
