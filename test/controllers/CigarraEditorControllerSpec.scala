@@ -44,12 +44,13 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
 
         val levelService = mock[LevelService]
         when(levelService.createLevel(any[String], any[String], any[String]))
-          .thenReturn(Future.successful("level-guid"))
+          .thenReturn(Future.successful("some-level-guid"))
 
         val cigarraName = "some-name"
         val cigarraService = mock[CigarraService]
-        val cigarra = Cigarra(guid = "some-guid", name = cigarraName)
+        val cigarra = Cigarra(guid = "some-cigarra-guid", name = cigarraName)
         when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(cigarra))
+        when(cigarraService.setFirstLevel("some-cigarra-guid", "some-level-guid")).thenReturn(Future.successful(false))
 
         val controller = createController(cigarraService, levelService)
 

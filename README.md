@@ -68,7 +68,9 @@ CREATE INDEX level_guid_index ON level (guid);`
 
 - Retrieve the Docker container name with `sudo docker ps`
 
-- Copy the sqlite3 db file outside of Docker container with `sudo docker cp <docker_container_id>:/dpl/cigarra3310.db`
+- Copy the sqlite3 db file outside of Docker container with `sudo docker cp <docker_container_id>:/dpl/cigarra3310.db ./`
+
+- Change the access permission with `sudo chmod 777 cigarra3310.db`
 
 - In another shell, retrieve the sqlite3 db file from the EC2 instance to local with `scp -i ~/.ssh/<private_key> ec2-user@Cigarra3310-env.mpxdwguh43.us-east-1.elasticbeanstalk.com:/home/ec2-user/cigarra3310.db ./`
   where `<private_key>` is the created during the eb ssh setup

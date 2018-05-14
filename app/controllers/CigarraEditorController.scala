@@ -21,29 +21,21 @@ class CigarraEditorController @Inject()(cigarraService: CigarraService, levelSer
       .map(someCigarra => Ok(views.html.editor(someCigarra.name, cigarraGuid)))
   }
   def createLevel(cigarraGuid: String): Action[AnyContent] = Action.async { request =>
-    cigarraService
-      .findCigarra(cigarraGuid)
-      .map { cigarra =>
-        getDescriptionAndSolutionFromRequest(request).fold(BadRequest("Missing description or solution"))(
-          descriptionAndSolution => {
-            createLevel(cigarra.guid, descriptionAndSolution).map { levelGuid =>
-              cigarraService.setFirstLevel(cigarra.guid, levelGuid)
-            }
-            Ok(views.html.editor(cigarra.name, cigarraGuid))
-          })
-      }
+    getLevelFromRequest(request).fold(Future.successful(BadRequest("Missing level description or solution")))(level =>
+      for {
+        levelGuid <- levelService.createLevel(cigarraGuid, level.description, level.solution)
+        _ <- cigarraService.setFirstLevel(cigarraGuid, levelGuid)
+        cigarra <- cigarraService.findCigarra(cigarraGuid)
+        result = Ok(views.html.editor(cigarra.name, cigarraGuid))
+      } yield result)
   }
 
-  private def createLevel(cigarraGuid: String, descriptionAndSolution: (String, String)): Future[String] =
-    levelService
-      .createLevel(cigarraGuid, descriptionAndSolution._1, descriptionAndSolution._2)
-
-  private def getDescriptionAndSolutionFromRequest(request: Request[AnyContent]) =
+  private def getLevelFromRequest(request: Request[AnyContent]): Option[Level] =
     for {
       requestParams <- request.body.asFormUrlEncoded
-      levelDescription <- getDescriptionFromBody(requestParams)
-      levelSolution <- getSolutionFromBody(requestParams)
-    } yield { (levelDescription, levelSolution) }
+      description <- getDescriptionFromBody(requestParams)
+      solution <- getSolutionFromBody(requestParams)
+    } yield { Level(description, solution) }
 
   private def getDescriptionFromBody(parametersMap: Map[String, Seq[String]]) =
     Try(parametersMap(LEVEL_DESCRIPTION_FROM_KEY)) match {
@@ -56,4 +48,6 @@ class CigarraEditorController @Inject()(cigarraService: CigarraService, levelSer
       case Failure(_)      => None
       case Success(values) => Some(values.head)
     }
+
+  case class Level(solution: String, description: String)
 }
