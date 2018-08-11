@@ -24,20 +24,30 @@ class LevelService @Inject()(levelRepository: LevelRepository, uuidGenerator: Id
   }
 
   def createLevel(cigarraId: String, description: String, solution: String): Future[String] = {
-    val currentLevelId = uuidGenerator.id
-    levelRepository.findLastCreatedLevelId(cigarraId).flatMap {
-      case Some(previousLevelId) =>
-        levelRepository.linkToPreviousLevel(currentLevelId, previousLevelId)
-        saveLevel(cigarraId, description, solution, currentLevelId)
-      case None => saveLevel(cigarraId, description, solution, currentLevelId)
-    }
+    val level = createLevel(description, solution)
+    for {
+      __ <- saveLevel(cigarraId, level)
+      _ <- linkLevelWithLastOne(cigarraId, level)
+
+    } yield level.id
   }
 
-  private def saveLevel(cigarraId: String, description: String, solution: String, levelId: String) =
+  private def createLevel(description: String, solution: String): Level = {
+    val id = uuidGenerator.id
+    Level(id, description, solution)
+  }
+
+  private def linkLevelWithLastOne(cigarraId: String, level: Level): Future[Boolean] =
+    for {
+      lastCreatedLevelId: Option[String] <- levelRepository.findLastCreatedLevelId(cigarraId)
+      __ <- lastCreatedLevelId.fold(Future.successful(true))(levelRepository.linkToPreviousLevel(level.id, _))
+    } yield true
+
+  private def saveLevel(cigarraId: String, level: Level) =
     levelRepository
-      .save(levelId = levelId, description = description, solution = solution, cigarraId = cigarraId)
+      .save(cigarraId, level)
       .map { _ =>
-        levelId
+        level.id
       }
 
   def findLevel(levelId: String): Future[Level] = levelRepository.find(levelId)

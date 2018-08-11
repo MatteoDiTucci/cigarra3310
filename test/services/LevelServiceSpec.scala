@@ -12,68 +12,63 @@ import scala.concurrent.duration._
 
 class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
 
+  private val cigarraId = "some-cigarra-id"
+  private val previousLevelId = "previous-level-id"
+  private val levelId = "some-level-id"
+  private val level = Level(levelId, "some-description", "some-solution")
+
   "LevelService" when {
     val uuidGenerator = mock[IdGenerator]
-    when(uuidGenerator.id).thenReturn("some-id")
+    when(uuidGenerator.id).thenReturn(levelId)
 
     "receiving description and solution for creating a level" when {
 
-      "it is not the first level created" should {
+      "a previous level exist for the same cigarra" should {
         val levelRepository = mock[LevelRepository]
-        when(levelRepository.findLastCreatedLevelId("some-cigarra-id"))
-          .thenReturn(Future.successful(Some("previous-level-id")))
+        when(levelRepository.findLastCreatedLevelId(cigarraId))
+          .thenReturn(Future.successful(Some(previousLevelId)))
 
-        "create the level, return its id and link the level to the previous one" in {
-          when(levelRepository.save("some-id", "some-description", "some-solution", "some-cigarra-id"))
-            .thenReturn(Future.successful(false))
-          when(levelRepository.linkToPreviousLevel("some-id", "previous-level-id"))
-            .thenReturn(Future.successful(false))
+        "create a new level, return its id and link the previous level to it" in {
+          mockSuccessfulSaveLevel(level, levelRepository)
+          mockSuccessfulLinkToPreviousLevel(levelRepository)
           val service = new LevelService(levelRepository, uuidGenerator)
 
-          Await.result(service.createLevel("some-cigarra-id", "some-description", "some-solution"), 1.second) mustEqual "some-id"
+          Await.result(service.createLevel(cigarraId, "some-description", "some-solution"), 1.second) mustEqual levelId
 
-          verify(levelRepository, times(1)).save("some-id", "some-description", "some-solution", "some-cigarra-id")
-          verify(levelRepository, times(1)).findLastCreatedLevelId("some-cigarra-id")
-          verify(levelRepository, times(1)).linkToPreviousLevel("some-id", "previous-level-id")
+          verify(levelRepository, times(1)).save(cigarraId, level)
+          verify(levelRepository, times(1)).findLastCreatedLevelId(cigarraId)
+          verify(levelRepository, times(1)).linkToPreviousLevel(levelId, previousLevelId)
           verify(uuidGenerator, times(1)).id
         }
       }
 
-      "it is the first level created" should {
+      "it is the first level created for the cigarra" should {
         val levelRepository = mock[LevelRepository]
-        when(levelRepository.findLastCreatedLevelId("some-cigarra-id"))
-          .thenReturn(Future.successful(None))
+        mockNoPreviousLevelCreated(levelRepository)
 
         "create the level and return its id" in {
-          when(levelRepository.save("some-id", "some-description", "some-solution", "some-cigarra-id"))
-            .thenReturn(Future.successful(false))
+          mockSuccessfulSaveLevel(level, levelRepository)
           val service = new LevelService(levelRepository, uuidGenerator)
 
-          Await.result(service.createLevel("some-cigarra-id", "some-description", "some-solution"), 1.second) mustEqual "some-id"
+          Await.result(service.createLevel(cigarraId, "some-description", "some-solution"), 1.second) mustEqual levelId
 
-          verify(levelRepository, times(1)).save("some-id", "some-description", "some-solution", "some-cigarra-id")
-          verify(levelRepository, times(1)).findLastCreatedLevelId("some-cigarra-id")
-          verify(levelRepository, never()).linkToPreviousLevel("some-id", "previous-level-id")
+          verify(levelRepository, times(1)).save(cigarraId, level)
+          verify(levelRepository, times(1)).findLastCreatedLevelId(cigarraId)
+          verify(levelRepository, never()).linkToPreviousLevel(levelId, previousLevelId)
         }
       }
     }
 
     "receiving a solution for a Level" when {
       val levelRepository = mock[LevelRepository]
-      when(levelRepository.find("current-level-id"))
-        .thenReturn(Future.successful(Level("current-level-id", "some-description", "current-level-solution")))
+      mockLevelExistsWithSolution("some-solution", levelRepository)
+
       val service = new LevelService(levelRepository, uuidGenerator)
 
-      "the solution is correct" when {
-        val level = Level("current-level-id", "some-description", "some-solution")
-        when(levelRepository.find("current-level-id"))
-          .thenReturn(Future.successful(level))
+      "the solution is correct" should {
 
-        "the solution submitted is identical to the one stored" should {
-
-          "return true" in {
-            Await.result(service.solveLevel("cigarra-id", "current-level-id", "some-solution"), 1.second) mustBe true
-          }
+        "return true" in {
+          Await.result(service.solveLevel(cigarraId, levelId, "some-solution"), 1.second) mustBe true
         }
 
         "the solution submitted contains white spaces" should {
@@ -82,15 +77,15 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
             val solutionWithLeadingSpaces = " some-solution"
             val solutionWithTrailingSpaces = "some-solution "
 
-            Await.result(service.solveLevel("cigarra-id", "current-level-id", solutionWithInnerSpaces), 1.second) mustBe true
-            Await.result(service.solveLevel("cigarra-id", "current-level-id", solutionWithLeadingSpaces), 1.second) mustBe true
-            Await.result(service.solveLevel("cigarra-id", "current-level-id", solutionWithTrailingSpaces), 1.second) mustBe true
+            Await.result(service.solveLevel(cigarraId, levelId, solutionWithInnerSpaces), 1.second) mustBe true
+            Await.result(service.solveLevel(cigarraId, levelId, solutionWithLeadingSpaces), 1.second) mustBe true
+            Await.result(service.solveLevel(cigarraId, levelId, solutionWithTrailingSpaces), 1.second) mustBe true
           }
         }
 
         "the solution submitted differs for the case" should {
           "return true" in {
-            Await.result(service.solveLevel("cigarra-id", "current-level-id", "some-Solution"), 1.second) mustBe true
+            Await.result(service.solveLevel(cigarraId, levelId, "some-Solution"), 1.second) mustBe true
           }
         }
       }
@@ -98,20 +93,18 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
       "the solution is not correct" should {
 
         "return false" in {
-          Await.result(service.solveLevel("cigarra-id", "current-level-id", "bad-solution"), 1.second) mustBe false
+          Await.result(service.solveLevel(cigarraId, levelId, "bad-solution"), 1.second) mustBe false
         }
       }
     }
 
-    "receiving a Cigarra and a Level id to retrieve a Level" should {
+    "receiving a cigarra and a Level id to retrieve a Level" should {
       "return the Level" in {
         val levelRepository = mock[LevelRepository]
-        val level = Level("some-level-id", "some-level-description", "some-level-solution")
-        when(levelRepository.find("current-level-id"))
-          .thenReturn(Future.successful(level))
+        when(levelRepository.find(levelId)).thenReturn(Future.successful(level))
         val service = new LevelService(levelRepository, uuidGenerator)
 
-        Await.result(service.findLevel("current-level-id"), 1.second) mustBe level
+        Await.result(service.findLevel(levelId), 1.second) mustBe level
       }
     }
 
@@ -121,15 +114,12 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
 
         "return the next Level" in {
           val levelRepository = mock[LevelRepository]
-          val level = Level("next-level-id", "next-level-description", "next-level-solution")
-          when(levelRepository.findNext("current-level-id"))
+          when(levelRepository.findNext(levelId))
             .thenReturn(Future.successful(Some(level)))
 
           val service = new LevelService(levelRepository, uuidGenerator)
 
-          val result = Await.result(service.findNextLevel("current-level-id"), 1.second)
-
-          result mustBe Some(level)
+          Await.result(service.findNextLevel(levelId), 1.second) mustBe Some(level)
         }
       }
 
@@ -137,16 +127,28 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
 
         "return None" in {
           val levelRepository = mock[LevelRepository]
-          when(levelRepository.findNext("current-level-id"))
+          when(levelRepository.findNext(levelId))
             .thenReturn(Future.successful(None))
 
           val service = new LevelService(levelRepository, uuidGenerator)
 
-          val result = Await.result(service.findNextLevel("current-level-id"), 1.second)
-
-          result mustBe None
+          Await.result(service.findNextLevel(levelId), 1.second) mustBe None
         }
       }
     }
   }
+  private def mockLevelExistsWithSolution(solution: String, levelRepository: LevelRepository) =
+    when(levelRepository.find(levelId))
+      .thenReturn(Future.successful(Level(levelId, "some-description", solution)))
+
+  private def mockNoPreviousLevelCreated(levelRepository: LevelRepository) =
+    when(levelRepository.findLastCreatedLevelId(cigarraId))
+      .thenReturn(Future.successful(None))
+
+  private def mockSuccessfulLinkToPreviousLevel(levelRepository: LevelRepository) =
+    when(levelRepository.linkToPreviousLevel(levelId, previousLevelId)).thenReturn(Future.successful(true))
+
+  private def mockSuccessfulSaveLevel(level: Level, levelRepository: LevelRepository) =
+    when(levelRepository.save(cigarraId, level))
+      .thenReturn(Future.successful(true))
 }

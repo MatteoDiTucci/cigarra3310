@@ -71,7 +71,7 @@ class LevelRepository @Inject()(db: Database)(
       }
     }
 
-  def save(levelId: String, description: String, solution: String, cigarraId: String): Future[Boolean] =
+  def save(cigarraId: String, level: Level) =
     Future {
       db.withConnection { implicit connection =>
         SQL(
@@ -80,10 +80,10 @@ class LevelRepository @Inject()(db: Database)(
                 VALUES ({id}, NULL, {cigarraId}, {description}, {solution});
           """
         ).on(
-            'id -> levelId,
+            'id -> level.id,
             'cigarraId -> cigarraId,
-            'description -> description,
-            'solution -> solution
+            'description -> level.description,
+            'solution -> level.solution
           )
           .execute()
       }

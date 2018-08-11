@@ -139,18 +139,11 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
   }
 
   private def saveLevel(level: Level, repository: LevelRepository): Future[Boolean] =
-    repository.save(levelId = level.id,
-                    description = level.description,
-                    solution = level.solution,
-                    cigarraId = cigarraId)
+    repository.save(cigarraId, level)
 
   private def createAndSaveLevelIn(repository: LevelRepository): Level = {
     val level = createLevelWithId(levelId)
-    Await.result(repository.save(levelId = level.id,
-                                 description = level.description,
-                                 solution = level.solution,
-                                 cigarraId = cigarraId),
-                 1.second)
+    Await.result(repository.save(cigarraId, level), 1.second)
     level
   }
 
