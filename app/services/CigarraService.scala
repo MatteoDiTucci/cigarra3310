@@ -9,25 +9,25 @@ import scala.concurrent.{ExecutionContext, Future}
 class CigarraService @Inject()(cigarraRepository: CigarraRepository, levelRepository: LevelRepository)(
     implicit ex: ExecutionContext) {
 
-  def findFirstLevel(cigarraGuid: String): Future[Option[Level]] =
-    cigarraRepository.findFirstLevel(cigarraGuid).flatMap {
+  def findFirstLevel(cigarraId: String): Future[Option[Level]] =
+    cigarraRepository.findFirstLevel(cigarraId).flatMap {
       case None => Future.successful(None)
-      case Some(levelGuid) =>
-        levelRepository.find(levelGuid).map(level => Some(level))
+      case Some(levelId) =>
+        levelRepository.find(levelId).map(level => Some(level))
     }
 
-  def findCigarra(guid: String): Future[Cigarra] =
-    cigarraRepository.findCigarra(guid)
+  def findCigarra(id: String): Future[Cigarra] =
+    cigarraRepository.findCigarra(id)
 
   def createCigarra(cigarraName: String): String = {
-    val guid = java.util.UUID.randomUUID.toString
-    cigarraRepository.save(guid, cigarraName)
-    guid
+    val id = java.util.UUID.randomUUID.toString
+    cigarraRepository.save(id, cigarraName)
+    id
   }
 
-  def setFirstLevel(cigarraGuid: String, levelGuid: String): Future[Boolean] =
-    cigarraRepository.findFirstLevel(cigarraGuid).flatMap {
-      case _ @None => cigarraRepository.setFirstLevel(cigarraGuid, levelGuid)
+  def setFirstLevel(cigarraId: String, levelId: String): Future[Boolean] =
+    cigarraRepository.findFirstLevel(cigarraId).flatMap {
+      case _ @None => cigarraRepository.setFirstLevel(cigarraId, levelId)
       case Some(_) => Future.successful(true)
     }
 }

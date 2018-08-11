@@ -1,4 +1,4 @@
-@(cigarraGuid: String, cigarraName: String, levelGuid: String, levelDescription: String)
+@(cigarraId: String, cigarraName: String, levelId: String, levelDescription: String)
 
 <html lang="en">
     <head>
@@ -16,7 +16,7 @@
             <div class="h-75 row align-items-center">
                 <div class="container">
                     <label id="description">@levelDescription</label>
-                    <form action="/cigarra/@cigarraGuid/level/@levelGuid" method="post" class="mt-3">
+                    <form action="/cigarra/@cigarraId/level/@levelId" method="post" class="mt-3">
                         <div class="form-group">
                             <input type="text" class="form-control" id="solution" name="solution" placeholder="Solution" maxlength="4000" autocomplete="off" required>
                         </div>

@@ -22,24 +22,24 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
     "receiving a GET request to play a Cigarra Level" should {
 
       "return the Level page" in {
-        val cigarra = Cigarra("some-cigarra-guid", "some-cigarra-name")
+        val cigarra = Cigarra("some-cigarra-id", "some-cigarra-name")
         val cigarraService = mock[CigarraService]
-        when(cigarraService.findCigarra(cigarra.guid)).thenReturn(Future.successful(cigarra))
+        when(cigarraService.findCigarra(cigarra.id)).thenReturn(Future.successful(cigarra))
 
-        val level = Level("some-level-guid", "some-cigarra-name", "some-solution")
+        val level = Level("some-level-id", "some-cigarra-name", "some-solution")
         val levelService = mock[LevelService]
         when(levelService.findLevel(level.id)).thenReturn(Future.successful(level))
 
         val controller = new LevelController(cigarraService, levelService)(Helpers.stubControllerComponents())
 
-        val result = Await.result(controller.level(cigarra.guid, level.id)(FakeRequest()), 1.second)
+        val result = Await.result(controller.level(cigarra.id, level.id)(FakeRequest()), 1.second)
 
-        result mustEqual Results.Ok(views.html.level(cigarra.guid, cigarra.name, level.id, level.description))
+        result mustEqual Results.Ok(views.html.level(cigarra.id, cigarra.name, level.id, level.description))
       }
     }
 
     "receiving a POST request to solve a Level" when {
-      val cigarra = Cigarra("some-cigarra-guid", "some-cigarra-name")
+      val cigarra = Cigarra("some-cigarra-id", "some-cigarra-name")
       val cigarraService = mock[CigarraService]
       when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(cigarra))
 
@@ -47,10 +47,10 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
 
         "redirect to the next level" in {
           val request =
-            FakeRequest("POST", "/cigarra/some-cigarra-guid/level/current-level-guid")
+            FakeRequest("POST", "/cigarra/some-cigarra-id/level/current-level-id")
               .withFormUrlEncodedBody("solution" -> "current-level-solution")
 
-          val nextLevel = Level("next-level-guid", "next-level-description", "next-level-solution")
+          val nextLevel = Level("next-level-id", "next-level-description", "next-level-solution")
           val levelService = mock[LevelService]
           when(levelService.solveLevel(any[String], any[String], any[String]))
             .thenReturn(Future.successful(true))
@@ -60,9 +60,9 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
           val controller = new LevelController(cigarraService, levelService)(Helpers.stubControllerComponents())
 
           val result =
-            Await.result(controller.solveLevel(cigarra.guid, "current-level-guid")(request), 1.second)
+            Await.result(controller.solveLevel(cigarra.id, "current-level-id")(request), 1.second)
 
-          result mustEqual Results.SeeOther("/cigarra/some-cigarra-guid/level/next-level-guid")
+          result mustEqual Results.SeeOther("/cigarra/some-cigarra-id/level/next-level-id")
         }
       }
 
@@ -70,7 +70,7 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
 
         "redirect to the finish page" in {
           val request =
-            FakeRequest("POST", "/cigarra/some-cigarra-guid/level/current-level-guid")
+            FakeRequest("POST", "/cigarra/some-cigarra-id/level/current-level-id")
               .withFormUrlEncodedBody("solution" -> "current-level-solution")
 
           val levelService = mock[LevelService]
@@ -81,7 +81,7 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
 
           val controller = new LevelController(cigarraService, levelService)(Helpers.stubControllerComponents())
 
-          val result = controller.solveLevel(cigarra.guid, "current-level-guid")(request)
+          val result = controller.solveLevel(cigarra.id, "current-level-id")(request)
 
           status(result) mustBe OK
           contentAsString(result) must include("The End")
@@ -92,7 +92,7 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
 
         "redirect to the current level" in {
           val request =
-            FakeRequest("POST", "/cigarra/some-cigarra-guid/level/current-level-guid")
+            FakeRequest("POST", "/cigarra/some-cigarra-id/level/current-level-id")
               .withFormUrlEncodedBody("solution" -> "bad-solution")
 
           val levelService = mock[LevelService]
@@ -102,9 +102,9 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
           val controller = new LevelController(cigarraService, levelService)(Helpers.stubControllerComponents())
 
           val result =
-            Await.result(controller.solveLevel(cigarra.guid, "current-level-guid")(request), 1.second)
+            Await.result(controller.solveLevel(cigarra.id, "current-level-id")(request), 1.second)
 
-          result mustEqual Results.SeeOther("/cigarra/some-cigarra-guid/level/current-level-guid")
+          result mustEqual Results.SeeOther("/cigarra/some-cigarra-id/level/current-level-id")
         }
       }
 
@@ -112,12 +112,12 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
 
         "return Bad Request" in {
           val request =
-            FakeRequest("POST", "/cigarra/some-cigarra-guid/level/current-level-guid")
+            FakeRequest("POST", "/cigarra/some-cigarra-id/level/current-level-id")
               .withFormUrlEncodedBody()
 
           val controller = new LevelController(cigarraService, mock[LevelService])(Helpers.stubControllerComponents())
 
-          val result = controller.solveLevel(cigarra.guid, "current-level-guid")(request)
+          val result = controller.solveLevel(cigarra.id, "current-level-id")(request)
 
           status(result) mustBe BAD_REQUEST
         }

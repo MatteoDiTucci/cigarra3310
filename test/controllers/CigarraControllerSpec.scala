@@ -52,12 +52,12 @@ class CigarraControllerSpec extends WordSpec with MustMatchers with MockitoSugar
         "redirect to the the first level of the Cigarra" in {
           val cigarraService = mock[CigarraService]
           when(cigarraService.findFirstLevel(any[String]))
-            .thenReturn(Future.successful(Some(Level("some-level-guid", "some-description", "some-solution"))))
+            .thenReturn(Future.successful(Some(Level("some-level-id", "some-description", "some-solution"))))
           val controller = createController(cigarraService = cigarraService)
 
-          val cigarraGuid = "some-cigarra-guid"
-          val request = FakeRequest("GET", s"/cigarra/$cigarraGuid")
-          val result = controller.findFirstLevel(cigarraGuid)(request)
+          val cigarraId = "some-cigarra-id"
+          val request = FakeRequest("GET", s"/cigarra/$cigarraId")
+          val result = controller.findFirstLevel(cigarraId)(request)
 
           status(result) mustEqual SEE_OTHER
         }
@@ -71,9 +71,9 @@ class CigarraControllerSpec extends WordSpec with MustMatchers with MockitoSugar
             .thenReturn(Future.successful(None))
           val controller = createController(cigarraService = cigarraService)
 
-          val cigarraGuid = "some-cigarra-guid"
-          val request = FakeRequest("GET", s"/cigarra/$cigarraGuid")
-          val result = controller.findFirstLevel(cigarraGuid)(request)
+          val cigarraId = "some-cigarra-id"
+          val request = FakeRequest("GET", s"/cigarra/$cigarraId")
+          val result = controller.findFirstLevel(cigarraId)(request)
 
           status(result) mustEqual INTERNAL_SERVER_ERROR
         }

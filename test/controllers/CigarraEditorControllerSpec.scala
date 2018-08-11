@@ -21,43 +21,43 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
 
       "return the Cigarra editor html" in {
         val cigarraName = "some-name"
-        val cigarraGuid = "some-cigarra-guid"
+        val cigarraId = "some-cigarra-id"
         val cigarraService = mock[CigarraService]
         when(cigarraService.findCigarra(any[String]))
-          .thenReturn(Future.successful(Cigarra(guid = "some-guid", name = cigarraName)))
+          .thenReturn(Future.successful(Cigarra(id = "some-id", name = cigarraName)))
         val controller = createController(cigarraService = cigarraService)
 
-        val result = controller.levelEditor(cigarraGuid)(FakeRequest())
+        val result = controller.levelEditor(cigarraId)(FakeRequest())
 
         contentAsString(result) must include(cigarraName)
-        contentAsString(result) must include(cigarraGuid)
+        contentAsString(result) must include(cigarraId)
       }
     }
 
     "receiving a valid POST request to create a new Level" should {
 
       "create a new level and return the Editor Page" in {
-        val cigarraGuid = "some-cigarra-guid"
+        val cigarraId = "some-cigarra-id"
         val request =
-          FakeRequest("POST", s"/cigarra/$cigarraGuid/level").withFormUrlEncodedBody("description" -> "some-name",
-                                                                                     "solution" -> "some-solution")
+          FakeRequest("POST", s"/cigarra/$cigarraId/level").withFormUrlEncodedBody("description" -> "some-name",
+                                                                                   "solution" -> "some-solution")
 
         val levelService = mock[LevelService]
         when(levelService.createLevel(any[String], any[String], any[String]))
-          .thenReturn(Future.successful("some-level-guid"))
+          .thenReturn(Future.successful("some-level-id"))
 
         val cigarraName = "some-name"
         val cigarraService = mock[CigarraService]
-        val cigarra = Cigarra(guid = "some-cigarra-guid", name = cigarraName)
+        val cigarra = Cigarra(id = "some-cigarra-id", name = cigarraName)
         when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(cigarra))
-        when(cigarraService.setFirstLevel("some-cigarra-guid", "some-level-guid")).thenReturn(Future.successful(false))
+        when(cigarraService.setFirstLevel("some-cigarra-id", "some-level-id")).thenReturn(Future.successful(false))
 
         val controller = createController(cigarraService, levelService)
 
-        val result = controller.createLevel("some-cigarra-guid")(request)
+        val result = controller.createLevel("some-cigarra-id")(request)
 
         contentAsString(result) must include(cigarraName)
-        contentAsString(result) must include(cigarraGuid)
+        contentAsString(result) must include(cigarraId)
         contentAsString(result) must include("Feedback")
 
         eventually {
@@ -67,17 +67,17 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
     }
 
     "receiving a malformed POST" when {
-      val cigarra = Cigarra(guid = "some-guid", name = "some-cigarra-name")
+      val cigarra = Cigarra(id = "some-id", name = "some-cigarra-name")
       val cigarraService = mock[CigarraService]
       when(cigarraService.findCigarra(any[String])).thenReturn(Future.successful(cigarra))
       val controller = createController(cigarraService)
 
       "the request has no level description" should {
         val request =
-          FakeRequest("POST", s"/cigarra/some-cigarra-guid/level").withFormUrlEncodedBody("solution" -> "some-solution")
+          FakeRequest("POST", s"/cigarra/some-cigarra-id/level").withFormUrlEncodedBody("solution" -> "some-solution")
 
         "return a BadRequest" in {
-          val result = controller.createLevel("some-cigarra-guid")(request)
+          val result = controller.createLevel("some-cigarra-id")(request)
 
           status(result) mustBe BAD_REQUEST
         }
@@ -85,11 +85,11 @@ class CigarraEditorControllerSpec extends WordSpec with MustMatchers with Mockit
 
       "request has no level solution" should {
         val request =
-          FakeRequest("POST", s"/cigarra/some-cigarra-guid/level")
+          FakeRequest("POST", s"/cigarra/some-cigarra-id/level")
             .withFormUrlEncodedBody("description" -> "some-description")
 
         "return a BadRequest" in {
-          val result = controller.createLevel("some-cigarra-guid")(request)
+          val result = controller.createLevel("some-cigarra-id")(request)
 
           status(result) mustBe BAD_REQUEST
         }

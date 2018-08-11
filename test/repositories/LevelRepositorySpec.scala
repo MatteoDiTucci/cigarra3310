@@ -139,17 +139,17 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
   }
 
   private def saveLevel(level: Level, repository: LevelRepository): Future[Boolean] =
-    repository.save(levelGuid = level.id,
+    repository.save(levelId = level.id,
                     description = level.description,
                     solution = level.solution,
-                    cigarraGuid = cigarraId)
+                    cigarraId = cigarraId)
 
   private def createAndSaveLevelIn(repository: LevelRepository): Level = {
     val level = createLevelWithId(levelId)
-    Await.result(repository.save(levelGuid = level.id,
+    Await.result(repository.save(levelId = level.id,
                                  description = level.description,
                                  solution = level.solution,
-                                 cigarraGuid = cigarraId),
+                                 cigarraId = cigarraId),
                  1.second)
     level
   }
@@ -164,16 +164,16 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
       ___ <- repository.linkToPreviousLevel(next.id, previous.id)
     } yield true, 1.second)
 
-  def deleteLevel(db: Database, guid: String) =
+  def deleteLevel(db: Database, id: String) =
     Future {
       db.withConnection { implicit connection =>
         SQL(
           """
                 DELETE FROM level
-                WHERE guid = {guid};
+                WHERE id = {id};
           """
         ).on(
-            'guid -> guid
+            'id -> id
           )
           .executeInsert()
       }

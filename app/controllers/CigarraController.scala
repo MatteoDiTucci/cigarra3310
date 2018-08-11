@@ -19,12 +19,12 @@ class CigarraController @Inject()(cigarraService: CigarraService, levelService: 
   }
 
   private def createCigarraWithName(name: String) = {
-    val guid = cigarraService.createCigarra(name)
-    redirectToEditorWithGuid(guid)
+    val id = cigarraService.createCigarra(name)
+    redirectToEditorWithId(id)
   }
 
-  private def redirectToEditorWithGuid(guid: String) =
-    SeeOther(s"/cigarra/$guid/level")
+  private def redirectToEditorWithId(id: String) =
+    SeeOther(s"/cigarra/$id/level")
 
   private def getCigarraName(request: Request[AnyContent]) =
     for {
@@ -38,10 +38,10 @@ class CigarraController @Inject()(cigarraService: CigarraService, levelService: 
       case Success(values) => Some(values.head)
     }
 
-  def findFirstLevel(cigarraGuid: String): Action[AnyContent] = Action.async {
-    cigarraService.findFirstLevel(cigarraGuid).map { maybeFirstLevel =>
+  def findFirstLevel(cigarraId: String): Action[AnyContent] = Action.async {
+    cigarraService.findFirstLevel(cigarraId).map { maybeFirstLevel =>
       maybeFirstLevel.fold(InternalServerError("Cigarra has level to play"))(level =>
-        SeeOther(s"/cigarra/$cigarraGuid/level/${level.id}"))
+        SeeOther(s"/cigarra/$cigarraId/level/${level.id}"))
     }
   }
 }

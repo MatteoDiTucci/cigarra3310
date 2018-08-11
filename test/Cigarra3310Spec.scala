@@ -101,7 +101,7 @@ class Cigarra3310Spec
       clickOn(submitSolutionButton)
 
       Then("I am redirected to the next level")
-      !(currentUrl contains "/cigarra/some-cigarra-guid/level/some-level-guid") && (currentUrl contains "/cigarra/some-cigarra-guid/level/")
+      !(currentUrl contains "/cigarra/some-cigarra-id/level/some-level-id") && (currentUrl contains "/cigarra/some-cigarra-id/level/")
     }
   }
 }

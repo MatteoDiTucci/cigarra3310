@@ -25,19 +25,19 @@ The number 3310 is an homage to the Nokia 3310 mobile phone.
 
 - Create the db schema with 
 `CREATE TABLE level (
-  guid text PRIMARY KEY NOT NULL,
+  id text PRIMARY KEY NOT NULL,
   description text NOT NULL,
   solution text NOT NULL,
-  next_level_guid text,
-  cigarra_guid text NOT NULL
+  next_level_id text,
+  cigarra_id text NOT NULL
 );
 CREATE TABLE cigarra (
-  guid text PRIMARY KEY NOT NULL,
+  id text PRIMARY KEY NOT NULL,
   name text NOT NULL,
-  first_level_guid text
+  first_level_id text
 );
-CREATE INDEX cigarra_guid_index ON cigarra (guid);
-CREATE INDEX level_guid_index ON level (guid);`
+CREATE INDEX cigarra_id_index ON cigarra (id);
+CREATE INDEX level_id_index ON level (id);`
 
 - Adjust database permissions `chmod 770 cigarra3310.db`
 

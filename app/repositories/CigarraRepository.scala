@@ -12,75 +12,75 @@ import scala.concurrent.{ExecutionContext, Future}
 class CigarraRepository @Inject()(db: Database)(
     @Named("database-execution-context") private implicit val ec: ExecutionContext) {
 
-  def setFirstLevel(cigarraGuid: String, levelGuid: String): Future[Boolean] =
+  def setFirstLevel(cigarraId: String, levelId: String): Future[Boolean] =
     Future {
       db.withConnection { implicit connection =>
         SQL(
           """
-                UPDATE cigarra 
-                SET first_level_guid = {levelGuid}
-                WHERE guid = {cigarraGuid};
+                UPDATE cigarra
+                SET first_level_id = {levelId}
+                WHERE id = {cigarraId};
           """
         ).on(
-            'cigarraGuid -> cigarraGuid,
-            'levelGuid -> levelGuid
+            'cigarraId -> cigarraId,
+            'levelId -> levelId
           )
           .execute()
       }
     }
 
-  def findCigarra(guid: String): Future[Cigarra] = Future {
+  def findCigarra(id: String): Future[Cigarra] = Future {
     db.withConnection { implicit connection =>
       SQL(
         """
-          SELECT guid,name
+          SELECT id,name
           FROM cigarra
-          WHERE guid = {guid};
+          WHERE id = {id};
         """
       ).on(
-          'guid -> guid
+          'id -> id
         )
         .as(cigarras.single)
     }
   }
 
-  def save(guid: String, name: String): Future[Boolean] =
+  def save(id: String, name: String): Future[Boolean] =
     Future {
       db.withConnection { implicit connection =>
         SQL(
           """
-                INSERT INTO cigarra (guid, name, first_level_guid)
-                VALUES ({guid}, {name}, NULL);
+                INSERT INTO cigarra (id, name, first_level_id)
+                VALUES ({id}, {name}, NULL);
           """
         ).on(
-            'guid -> guid,
+            'id -> id,
             'name -> name
           )
           .execute()
       }
     }
 
-  def findFirstLevel(guid: String) =
+  def findFirstLevel(id: String) =
     Future {
       db.withConnection { implicit connection =>
         SQL(
           """
-          SELECT first_level_guid
+          SELECT first_level_id
           FROM cigarra
-          WHERE guid = {guid};
+          WHERE id = {id};
         """
         ).on(
-            'guid -> guid
+            'id -> id
           )
           .as(SqlParser.scalar[String].singleOpt)
       }
     }
 
   val cigarras: RowParser[Cigarra] =
-    str("guid") ~
+    str("id") ~
       str("name") map {
-      case guid ~ name =>
-        Cigarra(guid, name)
+      case id ~ name =>
+        Cigarra(id, name)
     }
 
 }

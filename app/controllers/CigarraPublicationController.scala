@@ -12,10 +12,10 @@ class CigarraPublicationController @Inject()(cigarraService: CigarraService, pla
     cc: ControllerComponents)(implicit ex: ExecutionContext)
     extends AbstractController(cc) {
 
-  def index(cigarraGuid: String): Action[AnyContent] = Action.async {
+  def index(cigarraId: String): Action[AnyContent] = Action.async {
     cigarraService
-      .findCigarra(cigarraGuid)
-      .map(cigarra => Ok(views.html.publication(cigarra.name, s"/cigarra/$cigarraGuid")))
+      .findCigarra(cigarraId)
+      .map(cigarra => Ok(views.html.publication(cigarra.name, s"/cigarra/$cigarraId")))
   }
 
 }

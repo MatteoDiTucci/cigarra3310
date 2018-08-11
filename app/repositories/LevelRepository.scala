@@ -13,75 +13,75 @@ class LevelRepository @Inject()(db: Database)(
     @Named("database-execution-context") private implicit val ec: ExecutionContext) {
 
   val level: RowParser[Level] =
-    str("guid") ~
+    str("id") ~
       str("description") ~
       str("solution") map {
-      case guid ~ description ~ solution =>
-        Level(guid, description, solution)
+      case id ~ description ~ solution =>
+        Level(id, description, solution)
     }
 
-  def findNext(guid: String): Future[Option[Level]] =
+  def findNext(id: String): Future[Option[Level]] =
     Future {
       db.withConnection { implicit connection =>
         SQL(
           """
-          SELECT guid, description, solution
+          SELECT id, description, solution
           FROM level
-          WHERE guid = (
-                       SELECT next_level_guid
+          WHERE id = (
+                       SELECT next_level_id
                        FROM level
-                       WHERE guid = {guid});
+                       WHERE id = {id});
         """
         ).on(
-            'guid -> guid
+            'id -> id
           )
           .as(level.singleOpt)
       }
     }
 
-  def findLastCreatedLevelId(cigarraGuid: String): Future[Option[String]] =
+  def findLastCreatedLevelId(cigarraId: String): Future[Option[String]] =
     Future {
       db.withConnection { implicit connection =>
         SQL(
           """
-          SELECT guid
+          SELECT id
           FROM level
-          WHERE cigarra_guid = {cigarraGuid} AND next_level_guid is NULL;
+          WHERE cigarra_id = {cigarraId} AND next_level_id is NULL;
         """
         ).on(
-            'cigarraGuid -> cigarraGuid
+            'cigarraId -> cigarraId
           )
           .as(SqlParser.scalar[String].singleOpt)
       }
     }
 
-  def find(levelGuid: String): Future[Level] =
+  def find(levelId: String): Future[Level] =
     Future {
       db.withConnection { implicit connection =>
         SQL(
           """
-          SELECT guid, description, solution
+          SELECT id, description, solution
           FROM level
-          WHERE guid = {guid};
+          WHERE id = {id};
         """
         ).on(
-            'guid -> levelGuid
+            'id -> levelId
           )
           .as(level.single)
       }
     }
 
-  def save(levelGuid: String, description: String, solution: String, cigarraGuid: String): Future[Boolean] =
+  def save(levelId: String, description: String, solution: String, cigarraId: String): Future[Boolean] =
     Future {
       db.withConnection { implicit connection =>
         SQL(
           """
-                INSERT INTO level (guid, next_level_guid ,cigarra_guid, description, solution)
-                VALUES ({guid}, NULL, {cigarraGuid}, {description}, {solution});
+                INSERT INTO level (id, next_level_id ,cigarra_id, description, solution)
+                VALUES ({id}, NULL, {cigarraId}, {description}, {solution});
           """
         ).on(
-            'guid -> levelGuid,
-            'cigarraGuid -> cigarraGuid,
+            'id -> levelId,
+            'cigarraId -> cigarraId,
             'description -> description,
             'solution -> solution
           )
@@ -95,12 +95,12 @@ class LevelRepository @Inject()(db: Database)(
         SQL(
           """
                 UPDATE level
-                SET next_level_guid = {levelGuid}
-                WHERE guid = {previousLevelGuid};
+                SET next_level_id = {levelId}
+                WHERE id = {previousLevelId};
           """
         ).on(
-            'levelGuid -> currentLevelId,
-            'previousLevelGuid -> previousLevelId
+            'levelId -> currentLevelId,
+            'previousLevelId -> previousLevelId
           )
           .execute()
       }

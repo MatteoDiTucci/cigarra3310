@@ -15,35 +15,35 @@ class LevelController @Inject()(cigarraService: CigarraService, levelService: Le
 
   private val LEVEL_SOLUTION_FROM_KEY = "solution"
 
-  def solveLevel(cigarraGuid: String, levelGuid: String): Action[AnyContent] = Action.async {
+  def solveLevel(cigarraId: String, levelId: String): Action[AnyContent] = Action.async {
     request: Request[AnyContent] =>
       getSolutionFromBody(request).fold(Future.successful(BadRequest("Solution not found")))(solution =>
-        isSolutionCorrect(cigarraGuid, levelGuid, solution).flatMap { isCorrect =>
+        isSolutionCorrect(cigarraId, levelId, solution).flatMap { isCorrect =>
           if (isCorrect) {
-            redirectToNextLevel(cigarraGuid, levelGuid)
+            redirectToNextLevel(cigarraId, levelId)
           } else {
-            redirectToCurrentLevel(cigarraGuid, levelGuid)
+            redirectToCurrentLevel(cigarraId, levelId)
           }
       })
   }
 
-  private def redirectToCurrentLevel(cigarraGuid: String, levelGuid: String) =
-    Future.successful(SeeOther(s"/cigarra/$cigarraGuid/level/$levelGuid"))
+  private def redirectToCurrentLevel(cigarraId: String, levelId: String) =
+    Future.successful(SeeOther(s"/cigarra/$cigarraId/level/$levelId"))
 
-  private def redirectToNextLevel(cigarraGuid: String, levelGuid: String) =
-    levelService.findNextLevel(levelGuid).flatMap { maybeLevel =>
+  private def redirectToNextLevel(cigarraId: String, levelId: String) =
+    levelService.findNextLevel(levelId).flatMap { maybeLevel =>
       maybeLevel.fold(Future.successful(Ok(views.html.end("The End"))))(level =>
-        Future.successful(SeeOther(s"/cigarra/$cigarraGuid/level/${level.id}")))
+        Future.successful(SeeOther(s"/cigarra/$cigarraId/level/${level.id}")))
     }
 
-  private def isSolutionCorrect(cigarraGuid: String, levelGuid: String, solution: String) =
-    levelService.solveLevel(cigarraGuid, levelGuid, solution)
+  private def isSolutionCorrect(cigarraId: String, levelId: String, solution: String) =
+    levelService.solveLevel(cigarraId, levelId, solution)
 
-  def level(cigarraGuid: String, levelGuid: String): Action[AnyContent] = Action.async {
+  def level(cigarraId: String, levelId: String): Action[AnyContent] = Action.async {
     for {
-      cigarra <- cigarraService.findCigarra(cigarraGuid)
-      level <- levelService.findLevel(levelGuid)
-      result <- Future.successful(Ok(views.html.level(cigarraGuid, cigarra.name, levelGuid, level.description)))
+      cigarra <- cigarraService.findCigarra(cigarraId)
+      level <- levelService.findLevel(levelId)
+      result <- Future.successful(Ok(views.html.level(cigarraId, cigarra.name, levelId, level.description)))
     } yield result
 
   }
