@@ -21,7 +21,7 @@ class CigarraControllerSpec extends WordSpec with MustMatchers with MockitoSugar
       "redirect to the Cigarra editor page" in {
         val request = FakeRequest("POST", "/").withFormUrlEncodedBody("name" -> "some-name")
         val cigarraService = mock[CigarraService]
-        when(cigarraService.createCigarra("some-name")).thenReturn("some-id")
+        when(cigarraService.createCigarraWithName("some-name")).thenReturn("some-id")
 
         val controller = createController(cigarraService)
 
@@ -29,7 +29,7 @@ class CigarraControllerSpec extends WordSpec with MustMatchers with MockitoSugar
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).get must endWith("/cigarra/some-id/level")
-        verify(cigarraService, times(1)).createCigarra("some-name")
+        verify(cigarraService, times(1)).createCigarraWithName("some-name")
       }
     }
 

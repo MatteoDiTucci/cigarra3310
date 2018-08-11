@@ -7,7 +7,7 @@ import repositories.LevelRepository
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class LevelService @Inject()(levelRepository: LevelRepository, uuidGenerator: IdGenerator)(
+class LevelService @Inject()(levelRepository: LevelRepository, idGenerator: IdGenerator)(
     implicit ex: ExecutionContext) {
 
   def solveLevel(cigarraId: String, currentLevelId: String, submittedSolution: String): Future[Boolean] =
@@ -33,7 +33,7 @@ class LevelService @Inject()(levelRepository: LevelRepository, uuidGenerator: Id
   }
 
   private def createLevel(description: String, solution: String): Level = {
-    val id = uuidGenerator.id
+    val id = idGenerator.id
     Level(id, description, solution)
   }
 

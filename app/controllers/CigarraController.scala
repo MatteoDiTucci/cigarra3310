@@ -19,7 +19,7 @@ class CigarraController @Inject()(cigarraService: CigarraService, levelService: 
   }
 
   private def createCigarraWithName(name: String) = {
-    val id = cigarraService.createCigarra(name)
+    val id = cigarraService.createCigarraWithName(name)
     redirectToEditorWithId(id)
   }
 

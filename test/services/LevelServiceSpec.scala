@@ -18,8 +18,8 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
   private val level = Level(levelId, "some-description", "some-solution")
 
   "LevelService" when {
-    val uuidGenerator = mock[IdGenerator]
-    when(uuidGenerator.id).thenReturn(levelId)
+    val idGenerator = mock[IdGenerator]
+    when(idGenerator.id).thenReturn(levelId)
 
     "receiving description and solution for creating a level" when {
 
@@ -31,14 +31,14 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
         "create a new level, return its id and link the previous level to it" in {
           mockSuccessfulSaveLevel(level, levelRepository)
           mockSuccessfulLinkToPreviousLevel(levelRepository)
-          val service = new LevelService(levelRepository, uuidGenerator)
+          val service = new LevelService(levelRepository, idGenerator)
 
           Await.result(service.createLevel(cigarraId, "some-description", "some-solution"), 1.second) mustEqual levelId
 
           verify(levelRepository, times(1)).save(cigarraId, level)
           verify(levelRepository, times(1)).findLastCreatedLevelId(cigarraId)
           verify(levelRepository, times(1)).linkToPreviousLevel(levelId, previousLevelId)
-          verify(uuidGenerator, times(1)).id
+          verify(idGenerator, times(1)).id
         }
       }
 
@@ -48,7 +48,7 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
 
         "create the level and return its id" in {
           mockSuccessfulSaveLevel(level, levelRepository)
-          val service = new LevelService(levelRepository, uuidGenerator)
+          val service = new LevelService(levelRepository, idGenerator)
 
           Await.result(service.createLevel(cigarraId, "some-description", "some-solution"), 1.second) mustEqual levelId
 
@@ -63,7 +63,7 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
       val levelRepository = mock[LevelRepository]
       mockLevelExistsWithSolution("some-solution", levelRepository)
 
-      val service = new LevelService(levelRepository, uuidGenerator)
+      val service = new LevelService(levelRepository, idGenerator)
 
       "the solution is correct" should {
 
@@ -102,7 +102,7 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
       "return the Level" in {
         val levelRepository = mock[LevelRepository]
         when(levelRepository.find(levelId)).thenReturn(Future.successful(level))
-        val service = new LevelService(levelRepository, uuidGenerator)
+        val service = new LevelService(levelRepository, idGenerator)
 
         Await.result(service.findLevel(levelId), 1.second) mustBe level
       }
@@ -117,7 +117,7 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
           when(levelRepository.findNext(levelId))
             .thenReturn(Future.successful(Some(level)))
 
-          val service = new LevelService(levelRepository, uuidGenerator)
+          val service = new LevelService(levelRepository, idGenerator)
 
           Await.result(service.findNextLevel(levelId), 1.second) mustBe Some(level)
         }
@@ -130,7 +130,7 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
           when(levelRepository.findNext(levelId))
             .thenReturn(Future.successful(None))
 
-          val service = new LevelService(levelRepository, uuidGenerator)
+          val service = new LevelService(levelRepository, idGenerator)
 
           Await.result(service.findNextLevel(levelId), 1.second) mustBe None
         }

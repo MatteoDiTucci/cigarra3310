@@ -6,8 +6,9 @@ import repositories.{CigarraRepository, LevelRepository}
 
 import scala.concurrent.{ExecutionContext, Future}
 @Singleton
-class CigarraService @Inject()(cigarraRepository: CigarraRepository, levelRepository: LevelRepository)(
-    implicit ex: ExecutionContext) {
+class CigarraService @Inject()(cigarraRepository: CigarraRepository,
+                               levelRepository: LevelRepository,
+                               idGenerator: IdGenerator)(implicit ex: ExecutionContext) {
 
   def findFirstLevel(cigarraId: String): Future[Option[Level]] =
     cigarraRepository.findFirstLevel(cigarraId).flatMap {
@@ -19,8 +20,8 @@ class CigarraService @Inject()(cigarraRepository: CigarraRepository, levelReposi
   def findCigarra(id: String): Future[Cigarra] =
     cigarraRepository.findCigarra(id)
 
-  def createCigarra(cigarraName: String): String = {
-    val id = java.util.UUID.randomUUID.toString
+  def createCigarraWithName(cigarraName: String): String = {
+    val id = idGenerator.id
     cigarraRepository.save(id, cigarraName)
     id
   }
