@@ -28,13 +28,13 @@ class LevelControllerSpec extends WordSpec with MustMatchers with MockitoSugar {
 
         val level = Level("some-level-guid", "some-cigarra-name", "some-solution")
         val levelService = mock[LevelService]
-        when(levelService.findLevel(level.guid)).thenReturn(Future.successful(level))
+        when(levelService.findLevel(level.id)).thenReturn(Future.successful(level))
 
         val controller = new LevelController(cigarraService, levelService)(Helpers.stubControllerComponents())
 
-        val result = Await.result(controller.level(cigarra.guid, level.guid)(FakeRequest()), 1.second)
+        val result = Await.result(controller.level(cigarra.guid, level.id)(FakeRequest()), 1.second)
 
-        result mustEqual Results.Ok(views.html.level(cigarra.guid, cigarra.name, level.guid, level.description))
+        result mustEqual Results.Ok(views.html.level(cigarra.guid, cigarra.name, level.id, level.description))
       }
     }
 

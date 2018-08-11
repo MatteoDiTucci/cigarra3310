@@ -25,7 +25,7 @@ class LevelService @Inject()(levelRepository: LevelRepository, uuidGenerator: Uu
 
   def createLevel(cigarraGuid: String, description: String, solution: String): Future[String] = {
     val currentLevelGuid = uuidGenerator.guid
-    levelRepository.findLastCreatedLevelGuid(cigarraGuid).flatMap {
+    levelRepository.findLastCreatedLevelId(cigarraGuid).flatMap {
       case Some(previousLevelGuid) =>
         levelRepository.linkToPreviousLevel(currentLevelGuid, previousLevelGuid)
         saveLevel(cigarraGuid, description, solution, currentLevelGuid)

@@ -1,3 +1,3 @@
 package domain
 
-case class Level(guid: String, description: String, solution: String)
+case class Level(id: String, description: String, solution: String)

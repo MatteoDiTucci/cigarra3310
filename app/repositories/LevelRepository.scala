@@ -39,7 +39,7 @@ class LevelRepository @Inject()(db: Database)(
       }
     }
 
-  def findLastCreatedLevelGuid(cigarraGuid: String): Future[Option[String]] =
+  def findLastCreatedLevelId(cigarraGuid: String): Future[Option[String]] =
     Future {
       db.withConnection { implicit connection =>
         SQL(
@@ -89,18 +89,18 @@ class LevelRepository @Inject()(db: Database)(
       }
     }
 
-  def linkToPreviousLevel(levelGuid: String, previousLevelGuid: String): Future[Boolean] =
+  def linkToPreviousLevel(currentLevelId: String, previousLevelId: String): Future[Boolean] =
     Future {
       db.withConnection { implicit connection =>
         SQL(
           """
-                UPDATE level 
+                UPDATE level
                 SET next_level_guid = {levelGuid}
                 WHERE guid = {previousLevelGuid};
           """
         ).on(
-            'levelGuid -> levelGuid,
-            'previousLevelGuid -> previousLevelGuid
+            'levelGuid -> currentLevelId,
+            'previousLevelGuid -> previousLevelId
           )
           .execute()
       }

@@ -20,7 +20,7 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
 
       "it is not the first level created" should {
         val levelRepository = mock[LevelRepository]
-        when(levelRepository.findLastCreatedLevelGuid("some-cigarra-guid"))
+        when(levelRepository.findLastCreatedLevelId("some-cigarra-guid"))
           .thenReturn(Future.successful(Some("previous-level-guid")))
 
         "create the level, return its guid and link the level to the previous one" in {
@@ -33,7 +33,7 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
           Await.result(service.createLevel("some-cigarra-guid", "some-description", "some-solution"), 1.second) mustEqual "some-guid"
 
           verify(levelRepository, times(1)).save("some-guid", "some-description", "some-solution", "some-cigarra-guid")
-          verify(levelRepository, times(1)).findLastCreatedLevelGuid("some-cigarra-guid")
+          verify(levelRepository, times(1)).findLastCreatedLevelId("some-cigarra-guid")
           verify(levelRepository, times(1)).linkToPreviousLevel("some-guid", "previous-level-guid")
           verify(uuidGenerator, times(1)).guid
         }
@@ -41,7 +41,7 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
 
       "it is the first level created" should {
         val levelRepository = mock[LevelRepository]
-        when(levelRepository.findLastCreatedLevelGuid("some-cigarra-guid"))
+        when(levelRepository.findLastCreatedLevelId("some-cigarra-guid"))
           .thenReturn(Future.successful(None))
 
         "create the level and return its guid" in {
@@ -52,7 +52,7 @@ class LevelServiceSpec extends WordSpec with MockitoSugar with MustMatchers {
           Await.result(service.createLevel("some-cigarra-guid", "some-description", "some-solution"), 1.second) mustEqual "some-guid"
 
           verify(levelRepository, times(1)).save("some-guid", "some-description", "some-solution", "some-cigarra-guid")
-          verify(levelRepository, times(1)).findLastCreatedLevelGuid("some-cigarra-guid")
+          verify(levelRepository, times(1)).findLastCreatedLevelId("some-cigarra-guid")
           verify(levelRepository, never()).linkToPreviousLevel("some-guid", "previous-level-guid")
         }
       }

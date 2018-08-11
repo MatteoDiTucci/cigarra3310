@@ -41,7 +41,7 @@ class CigarraController @Inject()(cigarraService: CigarraService, levelService: 
   def findFirstLevel(cigarraGuid: String): Action[AnyContent] = Action.async {
     cigarraService.findFirstLevel(cigarraGuid).map { maybeFirstLevel =>
       maybeFirstLevel.fold(InternalServerError("Cigarra has level to play"))(level =>
-        SeeOther(s"/cigarra/$cigarraGuid/level/${level.guid}"))
+        SeeOther(s"/cigarra/$cigarraGuid/level/${level.id}"))
     }
   }
 }

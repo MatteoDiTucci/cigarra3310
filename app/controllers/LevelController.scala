@@ -33,7 +33,7 @@ class LevelController @Inject()(cigarraService: CigarraService, levelService: Le
   private def redirectToNextLevel(cigarraGuid: String, levelGuid: String) =
     levelService.findNextLevel(levelGuid).flatMap { maybeLevel =>
       maybeLevel.fold(Future.successful(Ok(views.html.end("The End"))))(level =>
-        Future.successful(SeeOther(s"/cigarra/$cigarraGuid/level/${level.guid}")))
+        Future.successful(SeeOther(s"/cigarra/$cigarraGuid/level/${level.id}")))
     }
 
   private def isSolutionCorrect(cigarraGuid: String, levelGuid: String, solution: String) =
