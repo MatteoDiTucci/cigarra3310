@@ -16,19 +16,19 @@ class LevelService @Inject()(levelRepository: LevelDao, idGenerator: IdGenerator
         solve(level, submittedSolution)
       }
 
+  def createLevel(cigarraId: String, description: String, solution: String): Future[String] = {
+    val level = createLevel(description, solution)
+    for {
+      _ <- linkLevelWithLastOne(cigarraId, level)
+      __ <- saveLevel(cigarraId, level)
+
+    } yield level.id
+  }
+
   private def solve(level: Level, solution: String): Boolean = {
     val sanitizedSolution = solution.toLowerCase.replaceAll("\\s", "")
     val sanitizedLevelSolution = level.solution.toLowerCase.replaceAll("\\s", "")
     sanitizedLevelSolution.equals(sanitizedSolution)
-  }
-
-  def createLevel(cigarraId: String, description: String, solution: String): Future[String] = {
-    val level = createLevel(description, solution)
-    for {
-      __ <- saveLevel(cigarraId, level)
-      _ <- linkLevelWithLastOne(cigarraId, level)
-
-    } yield level.id
   }
 
   private def createLevel(description: String, solution: String): Level = {
