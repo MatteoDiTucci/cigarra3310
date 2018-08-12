@@ -14,5 +14,5 @@ libraryDependencies ++= Seq(guice,
   "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test,
   jdbc,
   "org.playframework.anorm" %% "anorm" % "2.6.0",
-  "org.xerial" % "sqlite-jdbc" % "3.8.6",
+  "mysql" % "mysql-connector-java" % "8.0.11",
   "org.mockito" % "mockito-core" % "2.16.0" % Test)

@@ -10,7 +10,10 @@ object DbFixtures {
     Databases.withDatabase(
       driver = config.getString("db.default.driver"),
       url = config.getString("db.default.url"),
-      config = Map()
+      config = Map(
+        "username" -> config.getString("db.default.username"),
+        "password" -> config.getString("db.default.password")
+      )
     )(block)
   }
 }
