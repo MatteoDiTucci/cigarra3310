@@ -5,7 +5,7 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{MustMatchers, WordSpec}
-import repositories.{CigarraRepository, LevelRepository}
+import dao.{CigarraDao, LevelDao}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -34,7 +34,7 @@ class CigarraServiceSpec extends WordSpec with MustMatchers with MockitoSugar {
 
       "return the Cigarra" in {
         val cigarra = Cigarra(cigarraId, "some-name")
-        val cigarraRepository = mock[CigarraRepository]
+        val cigarraRepository = mock[CigarraDao]
         when(cigarraRepository.findCigarra(any[String])).thenReturn(Future.successful(cigarra))
         val service = createService(cigarraRepository)
 
@@ -46,8 +46,8 @@ class CigarraServiceSpec extends WordSpec with MustMatchers with MockitoSugar {
 
       "return the first level of a Cigarra" in {
         val level = Level(levelId, "some-description", "some-solution")
-        val cigarraRepository = mock[CigarraRepository]
-        val levelRepository = mock[LevelRepository]
+        val cigarraRepository = mock[CigarraDao]
+        val levelRepository = mock[LevelDao]
         mockStoredLevel(level, levelRepository)
         mockCigarraFirstLevelWithId(level.id, cigarraRepository)
         val service = createService(cigarraRepository, levelRepository)
@@ -60,7 +60,7 @@ class CigarraServiceSpec extends WordSpec with MustMatchers with MockitoSugar {
 
       "the cigarra has no level" should {
         "check if the cigarra has no level and then link it to the new level" in {
-          val cigarraRepository = mock[CigarraRepository]
+          val cigarraRepository = mock[CigarraDao]
           mockCigarraWithoutLevels(cigarraRepository)
           mockSuccessfullySetFirstLevel(cigarraRepository)
 
@@ -74,7 +74,7 @@ class CigarraServiceSpec extends WordSpec with MustMatchers with MockitoSugar {
 
       "the Cigarra already has at least one level" should {
         "check if the Cigarra does not have a first level" in {
-          val cigarraRepository = mock[CigarraRepository]
+          val cigarraRepository = mock[CigarraDao]
           when(cigarraRepository.findFirstLevel(cigarraId)).thenReturn(Future.successful(Some(levelId)))
 
           val service = createService(cigarraRepository)
@@ -87,23 +87,23 @@ class CigarraServiceSpec extends WordSpec with MustMatchers with MockitoSugar {
     }
   }
 
-  private def mockSuccessfullySetFirstLevel(cigarraRepository: CigarraRepository) =
+  private def mockSuccessfullySetFirstLevel(cigarraRepository: CigarraDao) =
     when(cigarraRepository.setFirstLevel(cigarraId, levelId)).thenReturn(Future.successful(true))
-  private def mockCigarraWithoutLevels(cigarraRepository: CigarraRepository) =
+  private def mockCigarraWithoutLevels(cigarraRepository: CigarraDao) =
     when(cigarraRepository.findFirstLevel(cigarraId)).thenReturn(Future.successful(None))
-  private def mockStoredLevel(level: Level, levelRepository: LevelRepository) =
+  private def mockStoredLevel(level: Level, levelRepository: LevelDao) =
     when(levelRepository.find(levelId)).thenReturn(Future.successful(level))
-  private def mockCigarraFirstLevelWithId(levelId: String, cigarraRepository: CigarraRepository) =
+  private def mockCigarraFirstLevelWithId(levelId: String, cigarraRepository: CigarraDao) =
     when(cigarraRepository.findFirstLevel(cigarraId)).thenReturn(Future.successful(Some(levelId)))
   private def mockSuccessfulCigarraSave = {
-    val cigarraRepository = mock[CigarraRepository]
+    val cigarraRepository = mock[CigarraDao]
     when(cigarraRepository.save(any[String], any[String])).thenReturn(Future.successful(true))
     cigarraRepository
   }
   private def mockIdGeneratorWithId(id: String, idGenerator: IdGenerator) =
     when(idGenerator.id).thenReturn(id)
-  private def createService(cigarraRepository: CigarraRepository,
-                            levelRepository: LevelRepository = mock[LevelRepository],
+  private def createService(cigarraRepository: CigarraDao,
+                            levelRepository: LevelDao = mock[LevelDao],
                             idGenerator: IdGenerator = mock[IdGenerator]) =
     new CigarraService(cigarraRepository, levelRepository, idGenerator)
 }

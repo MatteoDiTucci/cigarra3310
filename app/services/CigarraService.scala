@@ -2,13 +2,12 @@ package services
 
 import domain.{Cigarra, Level}
 import javax.inject.{Inject, Singleton}
-import repositories.{CigarraRepository, LevelRepository}
+import dao.{CigarraDao, LevelDao}
 
 import scala.concurrent.{ExecutionContext, Future}
 @Singleton
-class CigarraService @Inject()(cigarraRepository: CigarraRepository,
-                               levelRepository: LevelRepository,
-                               idGenerator: IdGenerator)(implicit ex: ExecutionContext) {
+class CigarraService @Inject()(cigarraRepository: CigarraDao, levelRepository: LevelDao, idGenerator: IdGenerator)(
+    implicit ex: ExecutionContext) {
 
   def findFirstLevel(cigarraId: String): Future[Option[Level]] =
     cigarraRepository.findFirstLevel(cigarraId).flatMap {

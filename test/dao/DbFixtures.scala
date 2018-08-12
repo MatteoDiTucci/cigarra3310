@@ -1,4 +1,4 @@
-package repositories
+package dao
 
 import com.typesafe.config.{Config, ConfigFactory}
 import play.api.db.{Database, Databases}

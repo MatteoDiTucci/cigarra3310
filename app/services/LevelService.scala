@@ -2,13 +2,12 @@ package services
 
 import domain.Level
 import javax.inject.{Inject, Singleton}
-import repositories.LevelRepository
+import dao.LevelDao
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class LevelService @Inject()(levelRepository: LevelRepository, idGenerator: IdGenerator)(
-    implicit ex: ExecutionContext) {
+class LevelService @Inject()(levelRepository: LevelDao, idGenerator: IdGenerator)(implicit ex: ExecutionContext) {
 
   def solveLevel(cigarraId: String, currentLevelId: String, submittedSolution: String): Future[Boolean] =
     levelRepository

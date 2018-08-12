@@ -1,4 +1,4 @@
-package repositories
+package dao
 
 import anorm.SQL
 import domain.Cigarra
@@ -9,7 +9,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class CigarraRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfterEach {
+class CigarraDaoSpec extends WordSpec with MustMatchers with BeforeAndAfterEach {
 
   private val cigarraId = "some-cigarra-id"
 
@@ -21,13 +21,13 @@ class CigarraRepositorySpec extends WordSpec with MustMatchers with BeforeAndAft
     Await.result(deleteCigarra(database, cigarraId), 1.second)
   }
 
-  "CigarraRepository" when {
+  "CigarraDao" when {
 
     "saving the Cigarra" should {
 
       "persist it in DB" in {
         DbFixtures.withMyDatabase { database =>
-          val cigarraRepository = new CigarraRepository(database)
+          val cigarraRepository = new CigarraDao(database)
           val cigarra = Cigarra(cigarraId, "some-name")
 
           Await.result(cigarraRepository.save(cigarraId, "some-name"), 1.second)
@@ -44,7 +44,7 @@ class CigarraRepositorySpec extends WordSpec with MustMatchers with BeforeAndAft
         "return the first level id" in {
           DbFixtures.withMyDatabase { database =>
             val levelId = "first-level-id"
-            val cigarraRepository = new CigarraRepository(database)
+            val cigarraRepository = new CigarraDao(database)
             Await.result(saveCigarraWithFirstLevel(database, cigarraId, levelId), 1.second)
 
             Await.result(cigarraRepository.findFirstLevel(cigarraId), 1.second) mustBe Some(levelId)
@@ -56,7 +56,7 @@ class CigarraRepositorySpec extends WordSpec with MustMatchers with BeforeAndAft
 
         "return nothing" in {
           DbFixtures.withMyDatabase { database =>
-            val cigarraRepository = new CigarraRepository(database)
+            val cigarraRepository = new CigarraDao(database)
             Await.result(cigarraRepository.save(cigarraId, "some-cigarra-name"), 1.second)
 
             Await.result(cigarraRepository.findFirstLevel(cigarraId), 1.second) mustBe None
@@ -69,7 +69,7 @@ class CigarraRepositorySpec extends WordSpec with MustMatchers with BeforeAndAft
 
       "update cigarra with its first level" in {
         DbFixtures.withMyDatabase { database =>
-          val cigarraRepository = new CigarraRepository(database)
+          val cigarraRepository = new CigarraDao(database)
           val levelId = "some-level-id"
           Await.result(cigarraRepository.save(cigarraId, "some-name"), 1.second)
           Await.result(cigarraRepository.setFirstLevel(cigarraId, levelId), 1.second)

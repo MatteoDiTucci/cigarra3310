@@ -1,4 +1,4 @@
-package repositories
+package dao
 
 import anorm.SqlParser.str
 import anorm.{~, RowParser, SQL, SqlParser}
@@ -9,8 +9,7 @@ import play.api.db.Database
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class LevelRepository @Inject()(db: Database)(
-    @Named("database-execution-context") private implicit val ec: ExecutionContext) {
+class LevelDao @Inject()(db: Database)(@Named("database-execution-context") private implicit val ec: ExecutionContext) {
 
   val level: RowParser[Level] =
     str("id") ~

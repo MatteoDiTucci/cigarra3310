@@ -1,4 +1,4 @@
-package repositories
+package dao
 
 import anorm.SQL
 import domain.Level
@@ -9,7 +9,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfterEach {
+class LevelDaoSpec extends WordSpec with MustMatchers with BeforeAndAfterEach {
 
   private val cigarraId = "some-cigarra-id"
   private val levelId = "some-level-id"
@@ -25,16 +25,16 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
     Await.result(deleteLevel(database, anotherLevelId), 1.second)
   }
 
-  "LevelRepository" when {
+  "LevelDao" when {
 
     "receiving a Cigarra id and a Level to save a Level" should {
 
       "persist the level" in {
         DbFixtures.withMyDatabase { database =>
-          val repository = new LevelRepository(database)
-          val level = createAndSaveLevelIn(repository)
+          val dao = new LevelDao(database)
+          val level = createAndSaveLevelIn(dao)
 
-          Await.result(repository.find(levelId), 1.second) mustEqual level
+          Await.result(dao.find(levelId), 1.second) mustEqual level
         }
       }
     }
@@ -45,10 +45,10 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
 
         "return the id of the level" in {
           DbFixtures.withMyDatabase { database =>
-            val repository = new LevelRepository(database)
-            val level = createAndSaveLevelIn(repository)
+            val dao = new LevelDao(database)
+            val level = createAndSaveLevelIn(dao)
 
-            Await.result(repository.findLastCreatedLevelId(cigarraId), 1.second) mustBe Some(level.id)
+            Await.result(dao.findLastCreatedLevelId(cigarraId), 1.second) mustBe Some(level.id)
           }
         }
       }
@@ -57,12 +57,12 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
 
         "return the id of the last one" in {
           DbFixtures.withMyDatabase { database =>
-            val repository = new LevelRepository(database)
+            val dao = new LevelDao(database)
             val first = createLevelWithId(levelId)
             val last = createLevelWithId(anotherLevelId)
-            saveTwoLevelsForOneCigarra(first, last, repository)
+            saveTwoLevelsForOneCigarra(first, last, dao)
 
-            Await.result(repository.findLastCreatedLevelId(cigarraId), 1.second) mustBe Some(last.id)
+            Await.result(dao.findLastCreatedLevelId(cigarraId), 1.second) mustBe Some(last.id)
           }
         }
       }
@@ -71,9 +71,9 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
 
         "return nothing" in {
           DbFixtures.withMyDatabase { database =>
-            val repository = new LevelRepository(database)
+            val dao = new LevelDao(database)
 
-            Await.result(repository.findLastCreatedLevelId(cigarraId), 1.second) mustBe None
+            Await.result(dao.findLastCreatedLevelId(cigarraId), 1.second) mustBe None
           }
         }
       }
@@ -83,12 +83,12 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
 
       "connect the previous level to the new" in {
         DbFixtures.withMyDatabase { database =>
-          val repository = new LevelRepository(database)
+          val dao = new LevelDao(database)
           val previousLevel = createLevelWithId(levelId)
           val newLevel = createLevelWithId(anotherLevelId)
-          saveTwoLevelsForOneCigarra(previousLevel, newLevel, repository)
+          saveTwoLevelsForOneCigarra(previousLevel, newLevel, dao)
 
-          Await.result(repository.findNext(previousLevel.id), 1.second).get mustEqual newLevel
+          Await.result(dao.findNext(previousLevel.id), 1.second).get mustEqual newLevel
         }
       }
     }
@@ -98,10 +98,10 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
       "return the Level" in {
         DbFixtures.withMyDatabase { database =>
           val level = createLevelWithId(levelId)
-          val repository = new LevelRepository(database)
-          Await.result(saveLevel(level, repository), 1.second)
+          val dao = new LevelDao(database)
+          Await.result(saveLevel(level, dao), 1.second)
 
-          Await.result(repository.find(level.id), 1.second) mustBe level
+          Await.result(dao.find(level.id), 1.second) mustBe level
         }
       }
     }
@@ -112,12 +112,12 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
 
         "return the next Level" in {
           DbFixtures.withMyDatabase { database =>
-            val repository = new LevelRepository(database)
+            val dao = new LevelDao(database)
             val previousLevel = createLevelWithId(levelId)
             val newLevel = createLevelWithId(anotherLevelId)
-            saveTwoLevelsForOneCigarra(previousLevel, newLevel, repository)
+            saveTwoLevelsForOneCigarra(previousLevel, newLevel, dao)
 
-            Await.result(repository.findNext(previousLevel.id), 1.second) mustBe Some(newLevel)
+            Await.result(dao.findNext(previousLevel.id), 1.second) mustBe Some(newLevel)
           }
         }
       }
@@ -126,11 +126,11 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
 
         "return nothing" in {
           DbFixtures.withMyDatabase { database =>
-            val repository = new LevelRepository(database)
+            val dao = new LevelDao(database)
             val firstLevel = createLevelWithId(levelId)
-            Await.result(saveLevel(firstLevel, repository), 1.second)
+            Await.result(saveLevel(firstLevel, dao), 1.second)
 
-            Await.result(repository.findNext(firstLevel.id), 1.second) mustBe None
+            Await.result(dao.findNext(firstLevel.id), 1.second) mustBe None
           }
         }
       }
@@ -138,23 +138,23 @@ class LevelRepositorySpec extends WordSpec with MustMatchers with BeforeAndAfter
 
   }
 
-  private def saveLevel(level: Level, repository: LevelRepository): Future[Boolean] =
-    repository.save(cigarraId, level)
+  private def saveLevel(level: Level, dao: LevelDao): Future[Boolean] =
+    dao.save(cigarraId, level)
 
-  private def createAndSaveLevelIn(repository: LevelRepository): Level = {
+  private def createAndSaveLevelIn(dao: LevelDao): Level = {
     val level = createLevelWithId(levelId)
-    Await.result(repository.save(cigarraId, level), 1.second)
+    Await.result(dao.save(cigarraId, level), 1.second)
     level
   }
 
   private def createLevelWithId(id: String) =
     Level(id = id, description = "some-description", solution = "some-solution")
 
-  def saveTwoLevelsForOneCigarra(previous: Level, next: Level, repository: LevelRepository): Boolean =
+  def saveTwoLevelsForOneCigarra(previous: Level, next: Level, dao: LevelDao): Boolean =
     Await.result(for {
-      _ <- saveLevel(previous, repository)
-      __ <- saveLevel(next, repository)
-      ___ <- repository.linkToPreviousLevel(next.id, previous.id)
+      _ <- saveLevel(previous, dao)
+      __ <- saveLevel(next, dao)
+      ___ <- dao.linkToPreviousLevel(next.id, previous.id)
     } yield true, 1.second)
 
   def deleteLevel(db: Database, id: String) =

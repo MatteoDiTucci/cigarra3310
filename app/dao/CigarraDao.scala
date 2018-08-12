@@ -1,4 +1,4 @@
-package repositories
+package dao
 
 import anorm._
 import anorm.SqlParser._
@@ -9,7 +9,7 @@ import play.api.db.Database
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CigarraRepository @Inject()(db: Database)(
+class CigarraDao @Inject()(db: Database)(
     @Named("database-execution-context") private implicit val ec: ExecutionContext) {
 
   def setFirstLevel(cigarraId: String, levelId: String): Future[Boolean] =
