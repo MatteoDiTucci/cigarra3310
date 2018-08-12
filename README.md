@@ -1,76 +1,93 @@
 # Cigarra3310
 
 ## Description
-Create a sequence of riddles and let other people play it.
-The name Cigarra is an homage to the series of Cicada3301 puzzles.
-The number 3310 is an homage to the Nokia 3310 mobile phone.
+Create a sequence of riddles and let other people play it.  
+The name Cigarra is a homage to the series of Cicada3301 puzzles.  
+The number 3310 is a homage to the Nokia 3310 mobile phone.  
 
-## Create application artifact to be deployed 
-- Run `sbt dist` to produce the artifact `target/universal/cigarra3310-1.0-SNAPSHOT.zip`
+# Run locally
+- Create a local database instance following [these documentation]()
+- Test with `sbt test`
+- Run with `sbt -Dconfig.resource=local.conf run`
 
-- Extract artifact in another folder, for example `~/Desktop/cigarra3310/dpl`, with 
-`mkdir -p ~/Desktop/cigarra3310/dpl && 
- rm -R ~/Desktop/cigarra3310/* && 
- unzip -d ~/Desktop/cigarra3310/dpl target/universal/*-1.0-SNAPSHOT.zip && 
- mv ~/Desktop/cigarra3310/dpl/*/* ~/Desktop/cigarra3310/dpl/ && 
- rm ~/Desktop/cigarra3310/dpl/bin/*.bat && 
- mv ~/Desktop/cigarra3310/dpl/bin/* ~/Desktop/cigarra3310/dpl/bin/start && 
- cp -R .ebextensions ~/Desktop/cigarra3310/ &&  
- cp Dockerfile ~/Desktop/cigarra3310/`
+## Create database
+- Prerequisites: mysql 5.7 installed
+- Once logged inside mysql as root, give: 
 
-- Inside `~/Desktop/cigarra3310/Dockerfile` substitute the value of `play.http.secret.key` with the result of `sbt playGenerateSecret`
+  `CREATE DATABASE cigarra3310db;
+   
+   USE cigarra3310db;
+   
+   CREATE USER 'cigarra'@'localhost' IDENTIFIED BY '<PASSWORD_PLACEHOLDER>';
+   
+   GRANT DELETE, UPDATE, INSERT, SELECT ON cigarra3310db.* TO 'cigarra'@'localhost';
+   
+   FLUSH PRIVILEGES;
+   
+   CREATE TABLE level (
+     id                VARCHAR(36)    PRIMARY KEY NOT NULL,
+     description       TEXT                       NOT NULL,
+     solution          TEXT                       NOT NULL,
+     next_level_id     VARCHAR(36)                        ,
+     cigarra_id        VARCHAR(36)                NOT NULL
+   );
+   
+   CREATE TABLE cigarra (
+     id                VARCHAR(36)    PRIMARY KEY NOT NULL,
+     name              TEXT                       NOT NULL,
+     first_level_id    VARCHAR(36)
+   );
+   
+   CREATE INDEX cigarra_id_index ON cigarra (id);
+   
+   CREATE INDEX level_id_index ON level (id);`
+ 
+ 
+ ## Create environment in AWS Beanstalk
+ To setup the AWS infrastructure:
+ - For allowing the database creation, go to AWS Console -> IAM -> Roles -> Create Role -> AWSServiceRoleForRDS
+ - Go to AWS Console -> Beanstalk
+ - Click Create Environment
+ - Choose Web Server Environment
+ - Pick Docker as platform
+ - Click Configure More Options
+ - In Database section choose mysql, 5.7.22, 5GB
+ - Click create environment
+ - Pick the sample application for now
 
-## Create DB to be deployed
-- In folder `~/Desktop/cigarra3310/dpl` create a sqlite3 db with `sqlite3 cigarra3310.db` and then `.database`
+More info [here](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features.environments.html)
 
-- Create the db schema with 
-`CREATE TABLE level (
-  id text PRIMARY KEY NOT NULL,
-  description text NOT NULL,
-  solution text NOT NULL,
-  next_level_id text,
-  cigarra_id text NOT NULL
-);
-CREATE TABLE cigarra (
-  id text PRIMARY KEY NOT NULL,
-  name text NOT NULL,
-  first_level_id text
-);
-CREATE INDEX cigarra_id_index ON cigarra (id);
-CREATE INDEX level_id_index ON level (id);`
 
-- Adjust database permissions `chmod 770 cigarra3310.db`
-
-## Run Docker container locally
-- Prerequisites: Docker
-
-- Ensure the current folder just contains `Dockerfile` and `dpl/`
-
-- Build Docker image with `docker build -t cigarra3310 .`
-
-- Run the application with `docker run -it -p 9000:9000 -p 9443:9443 --rm cigarra3310`
-
-- Navigate to `localhost:9000` or `https://localhost:9443`
-
-## Upload to AWS Beanstalk
-- Prerequisites: AWS Beanstalk environment has been created
-  - [aws doc](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features.environments.html)
-  - [kipsigman guide](https://github.com/kipsigman/play-elastic-beanstalk)
-                                            
-- In `~/Desktop/cigarra3310` create a compressed file containing `dpl/`, `Dockerfile` and `.ebextensions`
-
-- Upload the archive through AWS Beanstalk Console
-
-## Retrieve production database
-- Prerequisites: eb ssh setup [aws doc](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb3-ssh.html)
+## Create DB schema in AWS Beanstalk RDS
+- Prerequisites: [aws eb ssh setup](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb3-ssh.html)
 
 - ssh into the EC2 instance with `eb ssh <beanstalk-environment-name> --region <beanstalk-environment-region> --profile eb-cli`
 
-- Retrieve the Docker container name with `sudo docker ps`
+- Install mysql with `sudo yum install mysql-server mysql-client`
 
-- Copy the sqlite3 db file outside of Docker container with `sudo docker cp <docker_container_id>:/dpl/cigarra3310.db ./`
+- Database username and password are the ones chosen when creating the Beanstalk environment.  
+  The RDS endpoint can be retrieved going to AWS Console -> RDS -> Instances -> choose the instance -> Connect section.  
+  Connect with database with `mysql -h<rds_endpoint> -u<root_username> -p`
 
-- Change the access permission with `sudo chmod 777 cigarra3310.db`
+- Create the database schema using the above ##Create database section
 
-- In another shell, retrieve the sqlite3 db file from the EC2 instance to local with `scp -i ~/.ssh/<private_key> ec2-user@Cigarra3310-env.mpxdwguh43.us-east-1.elasticbeanstalk.com:/home/ec2-user/cigarra3310.db ./`
-  where `<private_key>` is the created during the eb ssh setup
+ 
+ ## Deploy on AWS Beanstalk environment
+ - Run `sbt dist` to produce the artifact `target/universal/cigarra3310-1.0-SNAPSHOT.zip`
+ 
+ - Extract artifact in another folder, for example `~/cigarra3310/dpl`, with
+ `mkdir -p ~/cigarra3310/dpl && 
+  rm -R ~/cigarra3310/* && 
+  unzip -d ~/cigarra3310/dpl target/universal/*-1.0-SNAPSHOT.zip && 
+  mv ~/cigarra3310/dpl/*/* ~/cigarra3310/dpl/ && 
+  rm ~/cigarra3310/dpl/bin/*.bat && 
+  mv ~/cigarra3310/dpl/bin/* ~/cigarra3310/dpl/bin/start && 
+  cp -R .ebextensions ~/cigarra3310/ &&  
+  cp Dockerfile ~/cigarra3310/`
+ 
+ - Inside `~/cigarra3310/Dockerfile` substitute the value of `play.http.secret.key` with the result of `sbt playGenerateSecret`.
+   Be mindful to remove any symbol which is not a number nor a alphabetical character
+   
+- In `~/cigarra3310` create a compressed file containing `dpl/` and `Dockerfile`
+
+- Upload the archive through AWS Beanstalk Console: AWS Console -> Beanstalk -> <Beanstalk_Environment_Name> -> click Upload and Deploy
