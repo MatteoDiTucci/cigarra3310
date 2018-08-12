@@ -21,21 +21,25 @@ class CigarraEditorController @Inject()(cigarraService: CigarraService, levelSer
       .map(someCigarra => Ok(views.html.editor(someCigarra.name, cigarraId)))
   }
   def createLevel(cigarraId: String): Action[AnyContent] = Action.async { request =>
-    getLevelFromRequest(request).fold(Future.successful(BadRequest("Missing level description or solution")))(level =>
-      for {
-        levelId <- levelService.createLevel(cigarraId, level.description, level.solution)
-        _ <- cigarraService.setFirstLevel(cigarraId, levelId)
-        cigarra <- cigarraService.findCigarra(cigarraId)
-        result = Ok(views.html.editor(cigarra.name, cigarraId))
-      } yield result)
+    getLevelFromRequest(request).fold(badRequest) {
+      case (description: String, solution: String) =>
+        for {
+          levelId <- levelService.createLevel(cigarraId, description, solution)
+          _ <- cigarraService.setFirstLevel(cigarraId, levelId)
+          cigarra <- cigarraService.findCigarra(cigarraId)
+          result = Ok(views.html.editor(cigarra.name, cigarraId))
+        } yield result
+    }
   }
 
-  private def getLevelFromRequest(request: Request[AnyContent]): Option[Level] =
+  private def badRequest =
+    Future.successful(BadRequest("Missing level description or solution"))
+  private def getLevelFromRequest(request: Request[AnyContent]): Option[(String, String)] =
     for {
       requestParams <- request.body.asFormUrlEncoded
       description <- getDescriptionFromBody(requestParams)
       solution <- getSolutionFromBody(requestParams)
-    } yield { Level(description, solution) }
+    } yield { (description, solution) }
 
   private def getDescriptionFromBody(parametersMap: Map[String, Seq[String]]) =
     Try(parametersMap(LEVEL_DESCRIPTION_FROM_KEY)) match {
@@ -48,6 +52,4 @@ class CigarraEditorController @Inject()(cigarraService: CigarraService, levelSer
       case Failure(_)      => None
       case Success(values) => Some(values.head)
     }
-
-  case class Level(solution: String, description: String)
 }
